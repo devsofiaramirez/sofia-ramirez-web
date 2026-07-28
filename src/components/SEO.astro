@@ -1,0 +1,52 @@
+---
+// Componente <SEO /> reutilizable: title, description, canonical, OG, Twitter, JSON-LD.
+// Ver lineamientos/lineamientosSEO.MD sección 5 — cablear esto a mano en cada página, Astro no lo hace solo.
+interface Props {
+  title: string; // único por página, ~50-60 car., entidad principal cerca del inicio
+  description: string; // única por página, ~140-160 car.
+  image?: string; // OG image absoluta, ideal 1200x630
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const SITE_NAME = 'Sofía Ramírez — Importaciones & Consultoría';
+const DEFAULT_OG_IMAGE = '/og-default.jpg'; // placeholder hasta tener la foto real 1200x630
+
+const {
+  title,
+  description,
+  image = DEFAULT_OG_IMAGE,
+  type = 'website',
+  noindex = false,
+  jsonLd,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const absoluteImage = new URL(image, Astro.site).toString();
+const fullTitle = title.includes(SITE_NAME) ? title : `${title} | Sofía Ramírez`;
+
+const jsonLdEntries = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={absoluteImage} />
+<meta property="og:site_name" content={SITE_NAME} />
+<meta property="og:locale" content="es_CO" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteImage} />
+
+{jsonLdEntries.map((entry) => (
+  <script type="application/ld+json" set:html={JSON.stringify(entry)} is:inline />
+))}

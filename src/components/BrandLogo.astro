@@ -1,0 +1,30 @@
+---
+// Wordmark tipográfico de la marca — blanco roto + dorado metalizado.
+// Placeholder hasta que exista un logo/isotipo real (ver GUIA imágenes, sección "Assets de marca").
+interface Props {
+  variant?: 'full' | 'compact';
+  class?: string;
+}
+const { variant = 'full', class: className = '' } = Astro.props;
+---
+
+{variant === 'full' ? (
+  <div class={`inline-flex flex-col ${className}`}>
+    <span class="font-[var(--font-display)] font-extrabold tracking-tight text-2xl md:text-3xl leading-none">
+      <span class="text-[var(--color-text)]">SOFÍA</span>{' '}
+      <span class="gold-gradient-text">RAMÍREZ</span>
+    </span>
+    <span class="mt-1 text-[0.65rem] md:text-xs tracking-[0.3em] uppercase text-[var(--color-text-muted)]">
+      Importaciones &amp; Consultoría
+    </span>
+  </div>
+) : (
+  <div class={`inline-flex items-center gap-3 ${className}`}>
+    <span class="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-gold)] font-[var(--font-display)] font-bold text-sm gold-gradient-text">
+      SR
+    </span>
+    <span class="font-[var(--font-display)] font-bold tracking-tight text-lg leading-none text-[var(--color-text)]">
+      Sofía Ramírez
+    </span>
+  </div>
+)}

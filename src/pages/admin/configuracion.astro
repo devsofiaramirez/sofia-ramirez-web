@@ -1,0 +1,128 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import FileUploader from '@/components/admin/FileUploader.astro';
+import { getSiteSettings, setSiteSettings } from '@/lib/db';
+
+if (!Astro.locals.user) return Astro.redirect('/admin/login');
+
+const db = Astro.locals.runtime.env.DB;
+let saved = false;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const keys = [
+    'hero_title', 'hero_subtitle', 'hero_video_url',
+    'whatsapp_number', 'whatsapp_message',
+    'social_instagram', 'social_facebook', 'social_tiktok', 'social_linkedin',
+    'contact_email',
+    'promo_modal_image', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
+  ];
+  const entries: Record<string, string> = {};
+  for (const key of keys) entries[key] = form.get(key)?.toString() ?? '';
+  entries.promo_modal_enabled = form.get('promo_modal_enabled') === 'on' ? '1' : '0';
+
+  await setSiteSettings(db, entries);
+  saved = true;
+}
+
+const settings = await getSiteSettings(db);
+---
+
+<AdminLayout title="Configuración">
+  <h1 class="text-2xl font-bold">Configuración del sitio</h1>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">Textos del Hero, contacto, redes y modal publicitario.</p>
+
+  {saved && <p class="mt-4 rounded-lg bg-[var(--color-gold)]/10 px-4 py-2 text-sm text-[var(--color-gold)]">Cambios guardados.</p>}
+
+  <form method="POST" class="mt-8 space-y-10">
+    <section class="glass-card p-6">
+      <h2 class="mb-4 font-bold">Hero</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="hero_title">Título principal</label>
+          <input id="hero_title" name="hero_title" value={settings.hero_title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="hero_subtitle">Subtítulo</label>
+          <textarea id="hero_subtitle" name="hero_subtitle" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{settings.hero_subtitle}</textarea>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="hero_video_url">Video (URL de YouTube o Vimeo)</label>
+          <input id="hero_video_url" name="hero_video_url" value={settings.hero_video_url} placeholder="https://youtube.com/watch?v=..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card p-6">
+      <h2 class="mb-4 font-bold">Contacto y redes</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="whatsapp_number">Teléfono WhatsApp (con código de país, solo números)</label>
+          <input id="whatsapp_number" name="whatsapp_number" value={settings.whatsapp_number} placeholder="573000000000" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="whatsapp_message">Mensaje predefinido</label>
+          <input id="whatsapp_message" name="whatsapp_message" value={settings.whatsapp_message} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="contact_email">Correo de contacto</label>
+          <input id="contact_email" name="contact_email" type="email" value={settings.contact_email} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="social_instagram">Instagram (URL)</label>
+          <input id="social_instagram" name="social_instagram" value={settings.social_instagram} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="social_facebook">Facebook (URL)</label>
+          <input id="social_facebook" name="social_facebook" value={settings.social_facebook} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="social_tiktok">TikTok (URL)</label>
+          <input id="social_tiktok" name="social_tiktok" value={settings.social_tiktok} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="social_linkedin">LinkedIn (URL)</label>
+          <input id="social_linkedin" name="social_linkedin" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        </div>
+      </div>
+    </section>
+
+    <section id="modal" class="glass-card p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-bold">Modal publicitario</h2>
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" name="promo_modal_enabled" checked={settings.promo_modal_enabled === '1'} class="h-4 w-4 accent-[var(--color-gold)]" />
+          Activado
+        </label>
+      </div>
+
+      <div class="space-y-4">
+        <FileUploader
+          field="promo_modal_image"
+          label="Imagen promocional"
+          accept="image/*"
+          folder="promociones"
+          hint="JPEG, PNG o WebP, máx 10 MB"
+          currentValue={settings.promo_modal_image}
+        />
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="promo_modal_text">Texto de la oferta</label>
+          <textarea id="promo_modal_text" name="promo_modal_text" rows="2" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{settings.promo_modal_text}</textarea>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="promo_modal_button_text">Texto del botón</label>
+            <input id="promo_modal_button_text" name="promo_modal_button_text" value={settings.promo_modal_button_text} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="promo_modal_button_url">Link de redirección</label>
+            <input id="promo_modal_button_url" name="promo_modal_button_url" value={settings.promo_modal_button_url} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <button type="submit" class="btn-gold">Guardar cambios</button>
+  </form>
+</AdminLayout>

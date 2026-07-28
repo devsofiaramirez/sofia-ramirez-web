@@ -1,0 +1,35 @@
+---
+// SSR: el home lee site_settings/services/testimonials directo de D1 (mismo proyecto, sin API intermedia).
+// Costo: esta página ya no es 100% estática — se acepta porque D1 en el edge responde en pocos ms
+// y el HTML sigue siendo servido completo (cumple SEO 1.1: nada inyectado solo por JS de cliente).
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import ServicesGrid from '@/components/ServicesGrid.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import { getSiteSettings, getActiveServices, getActiveTestimonials } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const [settings, services, testimonials] = await Promise.all([
+  getSiteSettings(db),
+  getActiveServices(db),
+  getActiveTestimonials(db),
+]);
+---
+
+<BaseLayout
+  title="Asesoría e importaciones China–Cúcuta"
+  description="Sofía Ramírez: asesoría B2B, cursos de importaciones y gestión de bodegas y logística entre China y Cúcuta."
+  settings={settings}
+>
+  <Hero
+    title={settings.hero_title}
+    subtitle={settings.hero_subtitle}
+    videoUrl={settings.hero_video_url}
+    whatsappNumber={settings.whatsapp_number}
+    whatsappMessage={settings.whatsapp_message}
+  />
+  <ServicesGrid services={services} />
+  <Testimonials testimonials={testimonials} />
+</BaseLayout>

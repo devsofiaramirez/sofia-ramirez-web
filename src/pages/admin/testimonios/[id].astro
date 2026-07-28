@@ -1,0 +1,59 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import FileUploader from '@/components/admin/FileUploader.astro';
+import { getTestimonialById, updateTestimonial } from '@/lib/db';
+
+if (!Astro.locals.user) return Astro.redirect('/admin/login');
+
+const db = Astro.locals.runtime.env.DB;
+const id = Number(Astro.params.id);
+let testimonial = await getTestimonialById(db, id);
+if (!testimonial) return Astro.redirect('/admin/testimonios');
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  await updateTestimonial(db, id, {
+    author_name: form.get('author_name')?.toString().trim(),
+    author_role: form.get('author_role')?.toString().trim() ?? '',
+    quote: form.get('quote')?.toString().trim(),
+    photo_url: form.get('photo_url')?.toString() || null,
+    rating: Number(form.get('rating')) || 5,
+  });
+  testimonial = await getTestimonialById(db, id);
+  if (!testimonial) return Astro.redirect('/admin/testimonios');
+}
+---
+
+<AdminLayout title="Editar testimonio">
+  <h1 class="text-2xl font-bold">Editar testimonio</h1>
+
+  <form method="POST" class="glass-card mt-6 max-w-xl space-y-4 p-6">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1 block text-sm font-semibold" for="author_name">Nombre</label>
+        <input id="author_name" name="author_name" required value={testimonial.author_name} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-semibold" for="author_role">Empresa / Cargo</label>
+        <input id="author_role" name="author_role" value={testimonial.author_role} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+      </div>
+    </div>
+
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="quote">Testimonio</label>
+      <textarea id="quote" name="quote" required rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{testimonial.quote}</textarea>
+    </div>
+
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="rating">Calificación</label>
+      <select id="rating" name="rating" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">
+        {[5, 4, 3, 2, 1].map((n) => <option value={n} selected={n === testimonial.rating}>{n} estrellas</option>)}
+      </select>
+    </div>
+
+    <FileUploader field="photo_url" label="Foto (opcional)" accept="image/*" folder="testimonios" hint="JPEG, PNG o WebP, máx 10 MB" currentValue={testimonial.photo_url} />
+
+    <button type="submit" class="btn-gold">Guardar cambios</button>
+  </form>
+</AdminLayout>

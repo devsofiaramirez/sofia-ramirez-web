@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getAllServices, getAllTestimonials } from '@/lib/db';
+
+if (!Astro.locals.user) return Astro.redirect('/admin/login');
+
+const db = Astro.locals.runtime.env.DB;
+const [services, testimonials] = await Promise.all([getAllServices(db), getAllTestimonials(db)]);
+
+const cards = [
+  { label: 'Servicios y cursos', count: services.length, active: services.filter(s => s.is_active).length, href: '/admin/servicios' },
+  { label: 'Testimonios', count: testimonials.length, active: testimonials.filter(t => t.is_active).length, href: '/admin/testimonios' },
+];
+---
+
+<AdminLayout title="Dashboard">
+  <h1 class="text-2xl font-bold">Hola, {Astro.locals.user.name}</h1>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">Panel de administración de sofiaramirez.com</p>
+
+  <div class="mt-8 grid gap-6 sm:grid-cols-2">
+    {cards.map((card) => (
+      <a href={card.href} class="glass-card block p-6">
+        <p class="text-sm text-[var(--color-text-muted)]">{card.label}</p>
+        <p class="mt-2 text-3xl font-bold">{card.count}</p>
+        <p class="mt-1 text-xs text-[var(--color-gold)]">{card.active} activos</p>
+      </a>
+    ))}
+  </div>
+
+  <div class="mt-10 glass-card p-6">
+    <p class="text-sm font-semibold">Accesos rápidos</p>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <a href="/admin/configuracion" class="btn-ghost !py-2 !px-4 text-sm">Editar textos del Hero</a>
+      <a href="/admin/configuracion#modal" class="btn-ghost !py-2 !px-4 text-sm">Configurar modal publicitario</a>
+      <a href="/admin/servicios/nuevo" class="btn-ghost !py-2 !px-4 text-sm">+ Nuevo servicio</a>
+      <a href="/admin/testimonios/nuevo" class="btn-ghost !py-2 !px-4 text-sm">+ Nuevo testimonio</a>
+    </div>
+  </div>
+</AdminLayout>

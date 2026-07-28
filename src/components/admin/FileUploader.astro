@@ -1,0 +1,117 @@
+---
+interface Props {
+  field: string; // nombre del input hidden que recibe la URL final
+  label: string;
+  accept: string; // "image/*" o "video/*"
+  folder: string; // carpeta dentro de R2
+  hint: string;
+  currentValue?: string | null;
+  isVideo?: boolean;
+}
+const { field, label, accept, folder, hint, currentValue, isVideo = false } = Astro.props;
+const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
+---
+
+<div class="space-y-3" data-uid={uid}>
+  <input type="hidden" id={`url_${uid}`} name={field} value={currentValue ?? ''} />
+
+  <label class="block text-sm font-semibold" for={`file_${uid}`}>{label}</label>
+
+  <div id={`zone_${uid}`} class="relative rounded-2xl border-2 border-dashed border-[var(--color-border)] p-6 text-center transition-colors hover:border-[var(--color-gold)]">
+    <input type="file" id={`file_${uid}`} accept={accept} class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
+
+    <div id={`placeholder_${uid}`} class={currentValue ? 'hidden' : ''}>
+      <p class="text-sm font-semibold">Arrastra o haz clic para seleccionar</p>
+      <p class="text-xs text-[var(--color-text-muted)]">{hint}</p>
+    </div>
+
+    <div id={`preview_${uid}`} class={currentValue ? '' : 'hidden'}>
+      {!isVideo && <img id={`img_${uid}`} src={currentValue ?? ''} alt="Preview" class="mx-auto h-24 rounded-xl object-cover" />}
+      {isVideo && <p class="font-semibold text-[var(--color-gold)]">Video cargado</p>}
+      <p id={`fname_${uid}`} class="mt-1 truncate text-xs text-[var(--color-text-muted)]">{currentValue?.split('/').pop()}</p>
+    </div>
+  </div>
+
+  <div id={`progress_${uid}`} class="hidden h-1.5 rounded-full bg-[var(--color-bg-elevated-2)]">
+    <div id={`bar_${uid}`} class="h-full rounded-full bg-[var(--color-gold)]" style="width:0%"></div>
+  </div>
+  <p id={`error_${uid}`} class="hidden text-xs text-red-400"><span id={`errtext_${uid}`}></span></p>
+  <div id={`success_${uid}`} class="hidden flex items-center justify-between rounded-xl bg-[var(--color-gold)]/10 px-3 py-2 text-xs">
+    <span class="font-semibold text-[var(--color-gold)]">Archivo subido</span>
+    <button type="button" id={`clear_${uid}`} class="text-red-400 hover:text-red-300">Quitar</button>
+  </div>
+</div>
+
+<script define:vars={{ uid, folder }} is:inline>
+  (function () {
+    const fileInput = document.getElementById(`file_${uid}`);
+    const urlInput = document.getElementById(`url_${uid}`);
+    const placeholder = document.getElementById(`placeholder_${uid}`);
+    const preview = document.getElementById(`preview_${uid}`);
+    const imgEl = document.getElementById(`img_${uid}`);
+    const fnameEl = document.getElementById(`fname_${uid}`);
+    const progressEl = document.getElementById(`progress_${uid}`);
+    const barEl = document.getElementById(`bar_${uid}`);
+    const errorEl = document.getElementById(`error_${uid}`);
+    const errTextEl = document.getElementById(`errtext_${uid}`);
+    const successEl = document.getElementById(`success_${uid}`);
+    const clearBtn = document.getElementById(`clear_${uid}`);
+
+    function uploadFile(file) {
+      progressEl.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+      barEl.style.width = '0%';
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', folder);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        barEl.style.width = `${Math.round((e.loaded / e.total) * 100)}%`;
+      };
+      xhr.onload = () => {
+        let data;
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch {
+          data = null;
+        }
+        if (xhr.status >= 400 || !data?.success) {
+          progressEl.classList.add('hidden');
+          errorEl.classList.remove('hidden');
+          errTextEl.textContent = data?.error ?? 'Error al subir el archivo';
+          return;
+        }
+        setTimeout(() => progressEl.classList.add('hidden'), 400);
+        urlInput.value = data.url;
+        placeholder.classList.add('hidden');
+        preview.classList.remove('hidden');
+        if (imgEl && data.type === 'image') imgEl.src = data.url;
+        if (fnameEl) fnameEl.textContent = file.name;
+        successEl.classList.remove('hidden');
+      };
+      xhr.onerror = () => {
+        progressEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errTextEl.textContent = 'Error de red al subir el archivo';
+      };
+      xhr.send(fd);
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) uploadFile(e.target.files[0]);
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      urlInput.value = '';
+      if (imgEl) imgEl.src = '';
+      preview.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      successEl.classList.add('hidden');
+      fileInput.value = '';
+    });
+  })();
+</script>

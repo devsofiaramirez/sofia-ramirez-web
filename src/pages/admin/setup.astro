@@ -1,0 +1,74 @@
+---
+// Solo funciona una vez: se auto-deshabilita apenas exista un usuario.
+export const prerender = false;
+import '@/styles/global.css';
+import BrandLogo from '@/components/BrandLogo.astro';
+import { hashPassword } from '@/lib/auth';
+import { countUsers } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const existing = await countUsers(db);
+if (existing > 0) return Astro.redirect('/admin/login');
+
+let done = false;
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const name = form.get('name')?.toString().trim();
+  const email = form.get('email')?.toString().trim().toLowerCase();
+  const password = form.get('password')?.toString();
+
+  if (name && email && password) {
+    const hash = await hashPassword(password);
+    await db
+      .prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)')
+      .bind(name, email, hash, 'super_admin')
+      .run();
+    done = true;
+  } else {
+    error = 'Todos los campos son obligatorios.';
+  }
+}
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Configuración inicial | Panel admin</title>
+  </head>
+  <body class="flex min-h-screen items-center justify-center bg-[var(--color-bg)] p-6 text-[var(--color-text)]">
+    <div class="glass-card w-full max-w-sm p-8">
+      <div class="mb-8 flex justify-center">
+        <BrandLogo variant="full" />
+      </div>
+
+      {done ? (
+        <div class="text-center">
+          <p class="mb-4 text-sm">Cuenta creada correctamente.</p>
+          <a href="/admin/login" class="btn-gold">Iniciar sesión</a>
+        </div>
+      ) : (
+        <form method="POST" class="space-y-4">
+          {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">{error}</p>}
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="name">Nombre</label>
+            <input id="name" name="name" required class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="email">Correo</label>
+            <input id="email" name="email" type="email" required class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="password">Contraseña</label>
+            <input id="password" name="password" type="password" required class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          </div>
+          <button type="submit" class="btn-gold w-full">Crear administrador</button>
+        </form>
+      )}
+    </div>
+  </body>
+</html>

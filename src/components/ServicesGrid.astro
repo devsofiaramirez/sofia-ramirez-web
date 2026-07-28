@@ -1,0 +1,57 @@
+---
+import type { Service } from '@/lib/db';
+import PlaceholderImage from '@/components/PlaceholderImage.astro';
+
+interface Props {
+  services: Service[];
+}
+const { services } = Astro.props;
+
+const categoryLabel: Record<string, string> = {
+  consultoria: 'Asesoría B2B',
+  curso: 'Formación',
+  bodega: 'Logística',
+};
+---
+
+<section id="servicios" class="section-padding">
+  <div class="container">
+    <div class="max-w-2xl" data-reveal>
+      <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
+        Portafolio
+      </p>
+      <h2 class="h2-display font-bold">Servicios y cursos</h2>
+    </div>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {services.map((service) => (
+        <article class="glass-card flex flex-col overflow-hidden p-6" data-reveal>
+          {service.image_url ? (
+            <img
+              src={service.image_url}
+              alt={service.title}
+              width="480"
+              height="360"
+              loading="lazy"
+              class="mb-5 aspect-[4/3] w-full rounded-xl object-cover"
+            />
+          ) : (
+            <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" class="mb-5" />
+          )}
+
+          <span class="mb-2 w-fit rounded-full border border-[var(--color-border)] px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--color-gold)]">
+            {categoryLabel[service.category] ?? service.category}
+          </span>
+          <h3 class="text-lg font-bold">{service.title}</h3>
+          <p class="mt-2 flex-1 text-sm text-[var(--color-text-muted)]">{service.description}</p>
+
+          {service.cta_url && (
+            <a href={service.cta_url} target="_blank" rel="noopener" class="btn-ghost mt-5 w-fit !py-2 !px-4 text-sm">
+              {service.cta_text}
+            </a>
+          )}
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

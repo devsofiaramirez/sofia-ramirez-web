@@ -1,0 +1,76 @@
+---
+// Modal publicitario configurable desde /admin/configuracion.
+// Se renderiza server-side (mismo proyecto Astro+D1, sin necesidad de fetch cross-domain);
+// el script solo controla cuándo mostrarlo y precarga la imagen para evitar el flash/colapso visual.
+interface Props {
+  enabled: boolean;
+  image?: string;
+  text?: string;
+  buttonText?: string;
+  buttonUrl?: string;
+}
+const { enabled, image, text, buttonText, buttonUrl } = Astro.props;
+const shouldRender = enabled && !!image;
+---
+
+{shouldRender && (
+  <div
+    id="promo-modal-backdrop"
+    class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+  >
+    <div class="glass-card relative w-full max-w-md overflow-hidden !bg-[var(--color-bg-elevated)]">
+      <button
+        id="promo-modal-close"
+        aria-label="Cerrar"
+        class="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-[var(--color-text)] hover:text-[var(--color-gold)]"
+      >
+        ✕
+      </button>
+      <img id="promo-modal-image" src={image} alt="Promoción" width="480" height="480" class="aspect-square w-full object-cover" />
+      <div class="p-6 text-center">
+        {text && <p class="mb-4 text-[var(--color-text)]">{text}</p>}
+        {buttonUrl && (
+          <a href={buttonUrl} target="_blank" rel="noopener" class="btn-gold">
+            {buttonText || 'Quiero saber más'}
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+{shouldRender && (
+  <script>
+    const backdrop = document.getElementById('promo-modal-backdrop');
+    const closeBtn = document.getElementById('promo-modal-close');
+    const img = document.getElementById('promo-modal-image') as HTMLImageElement | null;
+
+    function closeModal() {
+      backdrop?.classList.add('hidden');
+      backdrop?.classList.remove('flex');
+    }
+
+    if (backdrop && img && !sessionStorage.getItem('promoModalShown')) {
+      const show = () => {
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('flex');
+        sessionStorage.setItem('promoModalShown', '1');
+      };
+      // Precargar antes de mostrar para evitar el colapso visual mientras carga.
+      if (img.complete) {
+        setTimeout(show, 1200);
+      } else {
+        img.addEventListener('load', () => setTimeout(show, 300));
+        img.addEventListener('error', () => {}); // si falla la imagen, simplemente no se muestra
+      }
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop?.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+)}

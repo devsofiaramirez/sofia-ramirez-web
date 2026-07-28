@@ -1,0 +1,19 @@
+name = "sofia-ramirez-web"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sofia-ramirez-db"
+database_id = "PENDIENTE-wrangler-d1-create"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "sofia-ramirez-media"
+
+[vars]
+R2_PUBLIC_URL = "PENDIENTE-URL-publica-del-bucket"
+
+# Secretos (NUNCA en este archivo, se configuran con `wrangler pages secret put`):
+#   JWT_SECRET

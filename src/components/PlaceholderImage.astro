@@ -1,0 +1,14 @@
+---
+// Placeholder visual hasta recibir el material fotográfico real de Sofía.
+// Cuando llegue la foto, reemplazar por <Image> de Astro (src/assets/...) o por la URL de R2.
+interface Props {
+  label: string;
+  aspect?: string; // ej. "16/9", "1/1", "4/3"
+  class?: string;
+}
+const { label, aspect = '4/3', class: className = '' } = Astro.props;
+---
+
+<div class={`image-placeholder ${className}`} style={`aspect-ratio: ${aspect};`}>
+  <span>📷 {label}</span>
+</div>

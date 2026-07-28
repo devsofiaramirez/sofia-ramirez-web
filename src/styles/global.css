@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/* ── Tema: Premium / Dark Luxury Industrial ─────────────────────────────── */
+@theme {
+  --color-bg: #0b0b0d;
+  --color-bg-elevated: #17171b;
+  --color-bg-elevated-2: #1f1f24;
+  --color-text: #f5f3ee;
+  --color-text-muted: #a8a6a1;
+  --color-gold: #c9a227;
+  --color-gold-light: #e8c766;
+  --color-gold-dark: #8a6d1a;
+  --color-border: rgba(201, 162, 39, 0.18);
+
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+}
+
+/* ── Reset base (regla no negociable: box-sizing global) ────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden; /* red de seguridad, no la solución principal */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Escala de espaciado y tipografía (tokens, no números sueltos) ──────── */
+:root {
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+.h1-display {
+  font-size: clamp(2.25rem, 3vw + 1.5rem, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.h2-display {
+  font-size: clamp(1.75rem, 2vw + 1rem, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.section-padding {
+  padding-block: clamp(3rem, 6vw, 6rem);
+}
+
+/* ── Utilidades de marca: glassmorphism + glow dorado ───────────────────── */
+.glass-card {
+  background: color-mix(in srgb, var(--color-bg-elevated) 70%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 40px -12px color-mix(in srgb, var(--color-gold) 55%, transparent);
+  transform: translateY(-4px);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold) 45%, var(--color-gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold-dark));
+  color: #0b0b0d;
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+.btn-gold:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.75rem;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-gold);
+  background: color-mix(in srgb, var(--color-gold) 8%, transparent);
+}
+
+/* ── Animación de entrada al hacer scroll (sutil, sin libs pesadas) ─────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Placeholder visual mientras llegan las fotos reales ────────────────── */
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-md);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-bg-elevated),
+    var(--color-bg-elevated) 10px,
+    var(--color-bg-elevated-2) 10px,
+    var(--color-bg-elevated-2) 20px
+  );
+  border: 1px dashed var(--color-border);
+  border-radius: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}

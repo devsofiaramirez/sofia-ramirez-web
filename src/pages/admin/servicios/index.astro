@@ -1,0 +1,91 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getAllServices, updateService, deleteService, reorderServices } from '@/lib/db';
+import { swapNeighbor } from '@/lib/utils';
+
+if (!Astro.locals.user) return Astro.redirect('/admin/login');
+
+const db = Astro.locals.runtime.env.DB;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('action')?.toString();
+  const id = Number(form.get('id'));
+
+  if (action === 'toggle') {
+    const services = await getAllServices(db);
+    const service = services.find((s) => s.id === id);
+    if (service) await updateService(db, id, { is_active: service.is_active ? 0 : 1 });
+  }
+  if (action === 'delete') {
+    await deleteService(db, id);
+  }
+  if (action === 'move-up' || action === 'move-down') {
+    const services = await getAllServices(db);
+    const ids = services.map((s) => s.id);
+    const reordered = swapNeighbor(ids, id, action === 'move-up' ? -1 : 1);
+    await reorderServices(db, reordered);
+  }
+  return Astro.redirect('/admin/servicios');
+}
+
+const services = await getAllServices(db);
+
+const categoryLabel: Record<string, string> = {
+  consultoria: 'Asesoría B2B',
+  curso: 'Formación',
+  bodega: 'Logística',
+};
+---
+
+<AdminLayout title="Servicios y cursos">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Servicios y cursos</h1>
+    <a href="/admin/servicios/nuevo" class="btn-gold !py-2 !px-4 text-sm">+ Nuevo</a>
+  </div>
+
+  <div class="glass-card overflow-hidden !p-0">
+    {services.map((s, i) => (
+      <div class="flex flex-wrap items-center gap-4 border-b border-[var(--color-border)] p-4 last:border-b-0">
+        {s.image_url && <img src={s.image_url} class="h-12 w-16 rounded-lg object-cover" alt="" />}
+        <div class="min-w-[10rem] flex-1">
+          <p class="font-semibold">{s.title}</p>
+          <p class="text-xs text-[var(--color-text-muted)]">{categoryLabel[s.category] ?? s.category}</p>
+        </div>
+
+        <span class={`rounded px-2 py-1 text-xs font-bold ${s.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-white/5 text-[var(--color-text-muted)]'}`}>
+          {s.is_active ? 'Activo' : 'Oculto'}
+        </span>
+
+        <div class="flex items-center gap-1">
+          <form method="POST">
+            <input type="hidden" name="action" value="move-up" />
+            <input type="hidden" name="id" value={s.id} />
+            <button type="submit" disabled={i === 0} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▲</button>
+          </form>
+          <form method="POST">
+            <input type="hidden" name="action" value="move-down" />
+            <input type="hidden" name="id" value={s.id} />
+            <button type="submit" disabled={i === services.length - 1} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▼</button>
+          </form>
+        </div>
+
+        <form method="POST">
+          <input type="hidden" name="action" value="toggle" />
+          <input type="hidden" name="id" value={s.id} />
+          <button type="submit" class="text-sm text-[var(--color-gold)] hover:underline">{s.is_active ? 'Ocultar' : 'Activar'}</button>
+        </form>
+
+        <a href={`/admin/servicios/${s.id}`} class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-gold)]">Editar</a>
+
+        <form method="POST" onsubmit="return confirm('¿Eliminar este servicio?')">
+          <input type="hidden" name="action" value="delete" />
+          <input type="hidden" name="id" value={s.id} />
+          <button type="submit" class="text-sm text-red-400 hover:text-red-300">Eliminar</button>
+        </form>
+      </div>
+    ))}
+    {services.length === 0 && <p class="p-10 text-center text-[var(--color-text-muted)]">No hay servicios aún.</p>}
+  </div>
+</AdminLayout>

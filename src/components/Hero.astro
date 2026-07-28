@@ -1,0 +1,84 @@
+---
+import PlaceholderImage from '@/components/PlaceholderImage.astro';
+import { buildWhatsappUrl } from '@/lib/utils';
+
+interface Props {
+  title: string;
+  subtitle: string;
+  videoUrl?: string;
+  whatsappNumber: string;
+  whatsappMessage: string;
+}
+const { title, subtitle, videoUrl, whatsappNumber, whatsappMessage } = Astro.props;
+const whatsappUrl = buildWhatsappUrl(whatsappNumber, whatsappMessage);
+
+// YouTube/Vimeo embed a partir de una URL simple (acepta ambos formatos comunes).
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu')) {
+      const id = u.hostname.includes('youtu.be') ? u.pathname.slice(1) : u.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (u.hostname.includes('vimeo')) {
+      const id = u.pathname.split('/').filter(Boolean).pop();
+      return id ? `https://player.vimeo.com/video/${id}` : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+const embedUrl = videoUrl ? toEmbedUrl(videoUrl) : null;
+---
+
+<section class="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
+  <!-- Fondo: resplandores dorados + mapa punteado sutil, decorativo -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute -top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-[var(--color-gold)] opacity-[0.08] blur-[120px]"></div>
+    <div class="absolute bottom-0 left-0 h-[24rem] w-[24rem] rounded-full bg-[var(--color-gold)] opacity-[0.06] blur-[120px]"></div>
+    <div
+      class="absolute inset-0 opacity-[0.15]"
+      style="background-image: radial-gradient(var(--color-gold) 1px, transparent 1px); background-size: 28px 28px;"
+    ></div>
+  </div>
+
+  <div class="container grid items-center gap-12 md:gap-8 md:grid-cols-[1.1fr_0.9fr]">
+    <div data-reveal>
+      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
+        Consultora e importadora
+      </p>
+      <h1 class="h1-display font-extrabold">
+        {title}
+      </h1>
+      <p class="mt-6 max-w-xl text-lg text-[var(--color-text-muted)]">
+        {subtitle}
+      </p>
+      <div class="mt-10 flex flex-wrap gap-4">
+        <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold">
+          Hablar por WhatsApp
+        </a>
+        <a href="/#servicios" class="btn-ghost">Ver servicios</a>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6" data-reveal>
+      <PlaceholderImage label="Foto corporativa de Sofía (hero, 16:9)" aspect="4/5" class="rounded-3xl shadow-[0_0_60px_-15px_rgba(201,162,39,0.35)]" />
+
+      {embedUrl ? (
+        <div class="overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_0_40px_-15px_rgba(201,162,39,0.4)]" style="aspect-ratio: 16/9;">
+          <iframe
+            src={embedUrl}
+            title="Video de presentación"
+            class="h-full w-full"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      ) : (
+        <PlaceholderImage label="Espacio para video de presentación (YouTube/Vimeo) — configurable desde /admin" aspect="16/9" />
+      )}
+    </div>
+  </div>
+</section>

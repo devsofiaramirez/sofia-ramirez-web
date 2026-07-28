@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+# Bots de búsqueda/recuperación IA — permitidos explícitamente para poder ser citados
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Bots de entrenamiento de modelos (GPTBot, Google-Extended, ClaudeBot, CCBot, Applebot-Extended,
+# Bytespider): decisión de negocio, no de SEO. Por defecto no se bloquean aquí — revisar con Sofía
+# si prefiere restringirlos.
+
+Sitemap: https://sofiaramirez.com/sitemap-index.xml

@@ -1,0 +1,46 @@
+---
+import type { Testimonial } from '@/lib/db';
+import PlaceholderImage from '@/components/PlaceholderImage.astro';
+
+interface Props {
+  testimonials: Testimonial[];
+}
+const { testimonials } = Astro.props;
+---
+
+{testimonials.length > 0 && (
+  <section id="testimonios" class="section-padding border-t border-[var(--color-border)]">
+    <div class="container">
+      <div class="max-w-2xl" data-reveal>
+        <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
+          Confianza
+        </p>
+        <h2 class="h2-display font-bold">Empresas y comerciantes que ya importan con Sofía</h2>
+      </div>
+
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {testimonials.map((t) => (
+          <figure class="glass-card flex flex-col gap-4 p-6" data-reveal>
+            <div class="text-[var(--color-gold)]" aria-hidden="true">
+              {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+            </div>
+            <blockquote class="flex-1 text-sm text-[var(--color-text-muted)]">
+              “{t.quote}”
+            </blockquote>
+            <figcaption class="flex items-center gap-3">
+              {t.photo_url ? (
+                <img src={t.photo_url} alt={t.author_name} width="40" height="40" loading="lazy" class="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <PlaceholderImage label="Foto" aspect="1/1" class="h-10 w-10 !p-0 !text-[0.5rem] rounded-full" />
+              )}
+              <div>
+                <p class="text-sm font-semibold">{t.author_name}</p>
+                {t.author_role && <p class="text-xs text-[var(--color-text-muted)]">{t.author_role}</p>}
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

@@ -1,0 +1,68 @@
+---
+export const prerender = false;
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import FileUploader from '@/components/admin/FileUploader.astro';
+import { createService, getAllServices } from '@/lib/db';
+
+if (!Astro.locals.user) return Astro.redirect('/admin/login');
+
+const db = Astro.locals.runtime.env.DB;
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const title = form.get('title')?.toString().trim();
+  const description = form.get('description')?.toString().trim() ?? '';
+  const category = form.get('category')?.toString() as 'consultoria' | 'curso' | 'bodega';
+  const image_url = form.get('image_url')?.toString() || null;
+  const cta_text = form.get('cta_text')?.toString().trim() || 'Más información';
+  const cta_url = form.get('cta_url')?.toString() || null;
+
+  if (title) {
+    const existing = await getAllServices(db);
+    await createService(db, { title, description, category, image_url, cta_text, cta_url, display_order: existing.length });
+    return Astro.redirect('/admin/servicios');
+  }
+  error = 'El título es obligatorio.';
+}
+---
+
+<AdminLayout title="Nuevo servicio">
+  <h1 class="text-2xl font-bold">Nuevo servicio o curso</h1>
+
+  <form method="POST" class="glass-card mt-6 max-w-xl space-y-4 p-6">
+    {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">{error}</p>}
+
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="category">Categoría</label>
+      <select id="category" name="category" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">
+        <option value="consultoria">Asesoría B2B</option>
+        <option value="curso">Curso / Formación</option>
+        <option value="bodega">Bodegas y Logística</option>
+      </select>
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="title">Título</label>
+      <input id="title" name="title" required class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="description">Descripción</label>
+      <textarea id="description" name="description" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]"></textarea>
+    </div>
+
+    <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="JPEG, PNG o WebP, máx 10 MB" />
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="mb-1 block text-sm font-semibold" for="cta_text">Texto del botón</label>
+        <input id="cta_text" name="cta_text" value="Más información" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-semibold" for="cta_url">Link del botón</label>
+        <input id="cta_url" name="cta_url" placeholder="https://wa.me/..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+      </div>
+    </div>
+
+    <button type="submit" class="btn-gold">Crear servicio</button>
+  </form>
+</AdminLayout>

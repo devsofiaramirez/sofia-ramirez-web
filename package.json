@@ -1,0 +1,28 @@
+{
+  "name": "sofia-ramirez-web",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "wrangler pages dev ./dist",
+    "astro": "astro",
+    "db:migrate:local": "wrangler d1 migrations apply sofia-ramirez-db --local",
+    "db:migrate": "wrangler d1 migrations apply sofia-ramirez-db --remote",
+    "hash-password": "node scripts/hash-password.js"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.3.0",
+    "@astrojs/sitemap": "^3.2.1",
+    "astro": "^5.8.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@cloudflare/workers-types": "^4.20250525.0",
+    "@tailwindcss/vite": "^4.1.7",
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.15.2"
+  }
+}
