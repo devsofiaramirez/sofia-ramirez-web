@@ -13,10 +13,24 @@ const cities = [
   { x: 730, y: 120, label: 'China' },
   { x: 460, y: 255, label: 'Colombia' },
 ];
+
+// Sin fechas/tiempos a propósito — aún no hay cifras reales que mostrar.
+const processSteps = [
+  { n: '1', title: 'Cotización y consultoría', desc: 'Revisamos qué necesitas importar y armamos el plan completo contigo.' },
+  { n: '2', title: 'Gestión en origen (China)', desc: 'Compra, control de calidad y consolidación de tu carga antes de embarcar.' },
+  { n: '3', title: 'Entrega en el lugar acordado', desc: 'Tu mercancía llega directamente a tu bodega, lista para retirar o distribuir.' },
+];
+
+const capabilities = [
+  { label: 'Gestión administrativa', desc: 'Trámites y documentación de importación, resueltos por nosotros.' },
+  { label: 'Gestión logística', desc: 'Bodega propia en Cúcuta y control de tu carga en cada etapa.' },
+  { label: 'Capacitaciones', desc: 'Cursos prácticos para que aprendas a importar por tu cuenta.' },
+  { label: 'Asesoría', desc: 'Acompañamiento personalizado en cada decisión de tu negocio.' },
+];
 ---
 
-<section class="relative overflow-hidden border-y border-[var(--color-border)] bg-[var(--color-bg-elevated)]/40 py-16 md:py-24">
-  <div class="container relative z-10 mb-10 max-w-2xl" data-reveal>
+<section class="relative overflow-hidden border-y border-[var(--color-border)] bg-[var(--color-bg-elevated)]/40 py-14 md:py-20">
+  <div class="container relative z-10 mb-8 max-w-2xl" data-reveal>
     <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-teal)]">Alcance global</p>
     <h2 class="h2-display font-bold">Presencia real entre China y Colombia</h2>
     <p class="mt-4 text-[var(--color-text-muted)]">
@@ -24,59 +38,100 @@ const cities = [
     </p>
   </div>
 
-  <div class="relative mx-auto aspect-[3/1] w-full max-w-6xl px-4" data-reveal aria-hidden="true">
-    <svg viewBox="0 0 1200 400" class="h-full w-full overflow-visible" role="presentation">
-      <defs>
-        <radialGradient id="globe-fill" cx="50%" cy="45%" r="60%">
-          <stop offset="0%" stop-color="var(--color-teal)" stop-opacity="0.12" />
-          <stop offset="100%" stop-color="var(--color-teal)" stop-opacity="0" />
-        </radialGradient>
-      </defs>
+  <div class="container">
+    <div class="grid items-center gap-10 lg:grid-cols-[0.85fr_1.4fr_0.85fr] lg:gap-6">
+      <!-- Cómo trabajamos -->
+      <ol class="space-y-6">
+        {processSteps.map((step, i) => (
+          <li class="group flex gap-4" data-reveal style={`transition-delay:${i * 120}ms`}>
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-gold)] text-sm font-bold text-[var(--color-on-accent)] transition-transform duration-300 group-hover:scale-110">
+              {step.n}
+            </span>
+            <div>
+              <p class="font-semibold">{step.title}</p>
+              <p class="mt-0.5 text-sm text-[var(--color-text-muted)]">{step.desc}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
 
-      <!-- Globo abstracto (wireframe) -->
-      <g stroke="var(--color-border-teal)" stroke-width="2" fill="none">
-        <circle cx="600" cy="200" r="170" fill="url(#globe-fill)" />
-        <ellipse cx="600" cy="200" rx="170" ry="60" />
-        <ellipse cx="600" cy="150" rx="145" ry="30" />
-        <ellipse cx="600" cy="250" rx="145" ry="30" />
-        <ellipse cx="600" cy="200" rx="60" ry="170" />
-      </g>
+      <!-- Globo -->
+      <div class="relative mx-auto aspect-square w-full max-w-md lg:max-w-[440px]" data-reveal aria-hidden="true">
+        <svg viewBox="375 -20 420 420" class="h-full w-full overflow-visible" role="presentation">
+          <defs>
+            <radialGradient id="globe-fill" cx="50%" cy="45%" r="60%">
+              <stop offset="0%" stop-color="var(--color-teal)" stop-opacity="0.16" />
+              <stop offset="100%" stop-color="var(--color-teal)" stop-opacity="0" />
+            </radialGradient>
+          </defs>
 
-      <!-- Rutas de vuelo -->
-      {routes.map((r) => (
-        <path id={r.id} d={r.d} fill="none" stroke={r.color} stroke-width="2" stroke-dasharray="5 7" opacity="0.75" />
-      ))}
+          <!-- Globo abstracto (wireframe), líneas iluminadas con glow propio -->
+          <g stroke="var(--color-teal)" stroke-width="2" fill="none" opacity="0.8" style="filter: drop-shadow(0 0 3px var(--color-teal)) drop-shadow(0 0 8px var(--color-teal));">
+            <circle cx="600" cy="200" r="170" fill="url(#globe-fill)" />
+            <ellipse cx="600" cy="200" rx="170" ry="60" />
+            <ellipse cx="600" cy="150" rx="145" ry="30" />
+            <ellipse cx="600" cy="250" rx="145" ry="30" />
+            <ellipse cx="600" cy="200" rx="60" ry="170" />
+          </g>
 
-      <!-- Ciudades: punto + pulso de radar -->
-      {cities.map((c) => (
-        <g>
-          <circle cx={c.x} cy={c.y} r="4" fill="var(--color-gold-light)" />
-          <circle cx={c.x} cy={c.y} r="4" fill="none" stroke="var(--color-gold-light)" stroke-width="1.5">
-            <animate attributeName="r" values="4;16;4" dur="2.8s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.6;0;0.6" dur="2.8s" repeatCount="indefinite" />
-          </circle>
-          {c.label && (
-            <text
-              x={c.x}
-              y={c.y - 16}
-              text-anchor="middle"
-              class="fill-[var(--color-text)]"
-              style="font-family: var(--font-body); font-size: 15px; font-weight: 600;"
-            >
-              {c.label}
-            </text>
-          )}
-        </g>
-      ))}
+          <!-- Rutas de vuelo, cada una con glow de su propio color -->
+          {routes.map((r) => (
+            <path
+              id={r.id}
+              d={r.d}
+              fill="none"
+              stroke={r.color}
+              stroke-width="2.5"
+              stroke-dasharray="5 7"
+              style={`filter: drop-shadow(0 0 3px ${r.color}) drop-shadow(0 0 7px ${r.color});`}
+            />
+          ))}
 
-      <!-- Aviones viajando por cada ruta -->
-      {routes.map((r) => (
-        <path d="M -7,-3.5 L 7,0 L -7,3.5 L -3.5,0 Z" fill={r.color}>
-          <animateMotion dur={r.dur} begin={r.begin} repeatCount="indefinite" rotate="auto">
-            <mpath href={`#${r.id}`} />
-          </animateMotion>
-        </path>
-      ))}
-    </svg>
+          <!-- Ciudades: punto + pulso de radar, con glow -->
+          {cities.map((c) => (
+            <g style="filter: drop-shadow(0 0 4px var(--color-gold-light)) drop-shadow(0 0 9px var(--color-gold-light));">
+              <circle cx={c.x} cy={c.y} r="7" fill="var(--color-gold-light)" />
+              <circle cx={c.x} cy={c.y} r="7" fill="none" stroke="var(--color-gold-light)" stroke-width="1.5">
+                <animate attributeName="r" values="7;22;7" dur="2.8s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.7;0;0.7" dur="2.8s" repeatCount="indefinite" />
+              </circle>
+              {c.label && (
+                <text
+                  x={c.x}
+                  y={c.y - 20}
+                  text-anchor="middle"
+                  class="fill-[var(--color-text)]"
+                  style="font-family: var(--font-display); font-size: 26px; font-weight: 800;"
+                >
+                  {c.label}
+                </text>
+              )}
+            </g>
+          ))}
+
+          <!-- Aviones viajando por cada ruta -->
+          {routes.map((r) => (
+            <path d="M -7,-3.5 L 7,0 L -7,3.5 L -3.5,0 Z" fill={r.color} style={`filter: drop-shadow(0 0 3px ${r.color});`}>
+              <animateMotion dur={r.dur} begin={r.begin} repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${r.id}`} />
+              </animateMotion>
+            </path>
+          ))}
+        </svg>
+      </div>
+
+      <!-- Todo bajo un mismo aliado -->
+      <ul class="space-y-4">
+        {capabilities.map((cap, i) => (
+          <li class="card-soft flex items-start gap-3 p-4" data-reveal style={`transition-delay:${i * 120}ms`}>
+            <span class="mt-0.5 text-[var(--color-gold)]" aria-hidden="true">✓</span>
+            <div>
+              <p class="font-semibold">{cap.label}</p>
+              <p class="mt-0.5 text-sm text-[var(--color-text-muted)]">{cap.desc}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   </div>
 </section>
