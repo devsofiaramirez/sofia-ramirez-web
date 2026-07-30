@@ -12,7 +12,7 @@ let saved = false;
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const keys = [
-    'hero_title', 'hero_subtitle', 'hero_video_url',
+    'hero_title', 'hero_subtitle', 'hero_video_url', 'hero_avatar_url',
     'whatsapp_number', 'whatsapp_message',
     'social_instagram', 'social_facebook', 'social_tiktok', 'social_linkedin',
     'contact_email',
@@ -43,6 +43,14 @@ const settings = await getSiteSettings(db);
       <h2 class="font-bold">Hero</h2>
       <p class="mt-1 text-xs text-[var(--color-text-muted)]">Es lo primero que ve cualquiera que entre a tu página.</p>
       <div class="mt-4 space-y-4">
+        <FileUploader
+          field="hero_avatar_url"
+          label="Tu foto o avatar"
+          accept="image/*"
+          folder="hero"
+          hint="JPEG, PNG o WebP, ideal en formato vertical (como una foto de medio cuerpo). Es la imagen circular grande junto a tu título."
+          currentValue={settings.hero_avatar_url}
+        />
         <div>
           <label class="mb-1 block text-sm font-semibold" for="hero_title">Título principal</label>
           <input id="hero_title" name="hero_title" value={settings.hero_title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />

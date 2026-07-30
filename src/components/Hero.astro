@@ -7,8 +7,10 @@ interface Props {
   videoUrl?: string;
   whatsappNumber: string;
   whatsappMessage: string;
+  avatarUrl?: string;
 }
-const { title, subtitle, videoUrl, whatsappNumber, whatsappMessage } = Astro.props;
+const { title, subtitle, videoUrl, whatsappNumber, whatsappMessage, avatarUrl } = Astro.props;
+const heroAvatar = avatarUrl || '/images/hero/sofia-hero.jpg';
 const whatsappUrl = buildWhatsappUrl(whatsappNumber, whatsappMessage);
 
 function toEmbedUrl(url: string): string | null {
@@ -73,10 +75,8 @@ const chips = [
     <div class="relative mx-auto w-full max-w-sm" data-reveal>
       <div class="badge-ring animate-float mx-auto aspect-square w-full max-w-[22rem] overflow-hidden rounded-full shadow-[0_0_70px_-10px_rgba(230,57,70,0.35)]">
         <img
-          src="/images/hero/sofia-hero.jpg"
+          src={heroAvatar}
           alt="Sofía Ramírez, consultora e importadora"
-          width="611"
-          height="1024"
           fetchpriority="high"
           loading="eager"
           class="h-full w-full object-cover object-top"
