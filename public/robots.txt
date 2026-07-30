@@ -22,5 +22,5 @@ Allow: /
 # Bytespider): decisión de negocio, no de SEO. Por defecto no se bloquean aquí — revisar con Sofía
 # si prefiere restringirlos.
 
-Sitemap: https://sofiaramirez.com/sitemap-index.xml
-Sitemap: https://sofiaramirez.com/sitemap-services.xml
+Sitemap: https://sofiaramirez.co/sitemap-index.xml
+Sitemap: https://sofiaramirez.co/sitemap-services.xml
