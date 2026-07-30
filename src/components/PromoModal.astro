@@ -21,7 +21,7 @@ const shouldRender = enabled && (hasVideo || !!image);
     id="promo-modal-backdrop"
     class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-sm p-4"
   >
-    <div class="glass-card relative w-full max-w-md overflow-hidden !bg-[var(--color-bg-elevated)]">
+    <div class="glass-card relative max-h-[92vh] max-w-[min(36rem,92vw)] overflow-hidden !bg-[var(--color-bg-elevated)]">
       <button
         id="promo-modal-close"
         aria-label="Cerrar"
@@ -30,9 +30,9 @@ const shouldRender = enabled && (hasVideo || !!image);
         ✕
       </button>
       {hasVideo ? (
-        <video id="promo-modal-media" src={videoUrl} class="aspect-square w-full object-cover" autoplay muted loop playsinline controls></video>
+        <video id="promo-modal-media" src={videoUrl} class="block h-auto max-h-[68vh] w-auto max-w-full" autoplay muted loop playsinline controls></video>
       ) : (
-        <img id="promo-modal-media" src={image} alt="Promoción" width="480" height="480" class="aspect-square w-full object-cover" />
+        <img id="promo-modal-media" src={image} alt="Promoción" class="block h-auto max-h-[68vh] w-auto max-w-full" />
       )}
       <div class="p-6 text-center">
         {text && <p class="mb-4 text-[var(--color-text)]">{text}</p>}
