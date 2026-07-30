@@ -11,7 +11,7 @@ export type ServiceCategory = 'consultoria' | 'curso' | 'bodega';
 
 export type Service = {
   id: number; category: ServiceCategory; title: string; slug: string; description: string;
-  image_url: string | null; cta_text: string; cta_url: string | null;
+  image_url: string | null; video_url: string | null; cta_text: string; cta_url: string | null;
   is_active: number; display_order: number;
   created_at: string; updated_at: string;
 };
@@ -105,11 +105,11 @@ export async function updateService(db: D1Database, id: number, data: Record<str
 
 export async function createService(db: D1Database, data: {
   category: ServiceCategory; title: string; slug: string; description: string;
-  image_url?: string | null; cta_text: string; cta_url?: string | null; display_order: number;
+  image_url?: string | null; video_url?: string | null; cta_text: string; cta_url?: string | null; display_order: number;
 }) {
   return db.prepare(
-    'INSERT INTO services (category, title, slug, description, image_url, cta_text, cta_url, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(data.category, data.title, data.slug, data.description, data.image_url ?? null, data.cta_text, data.cta_url ?? null, data.display_order).run();
+    'INSERT INTO services (category, title, slug, description, image_url, video_url, cta_text, cta_url, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(data.category, data.title, data.slug, data.description, data.image_url ?? null, data.video_url ?? null, data.cta_text, data.cta_url ?? null, data.display_order).run();
 }
 
 export async function deleteService(db: D1Database, id: number) {

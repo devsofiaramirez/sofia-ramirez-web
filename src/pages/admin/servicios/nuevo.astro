@@ -15,6 +15,7 @@ if (Astro.request.method === 'POST') {
   const description = form.get('description')?.toString().trim() ?? '';
   const category = form.get('category')?.toString() as 'consultoria' | 'curso' | 'bodega';
   const image_url = form.get('image_url')?.toString() || null;
+  const video_url = form.get('video_url')?.toString() || null;
   const cta_text = form.get('cta_text')?.toString().trim() || 'Más información';
   const cta_url = form.get('cta_url')?.toString() || null;
   const slugInput = form.get('slug')?.toString().trim();
@@ -22,7 +23,7 @@ if (Astro.request.method === 'POST') {
   if (title) {
     const existing = await getAllServices(db);
     const slug = await generateUniqueServiceSlug(db, slugInput || title);
-    await createService(db, { title, slug, description, category, image_url, cta_text, cta_url, display_order: existing.length });
+    await createService(db, { title, slug, description, category, image_url, video_url, cta_text, cta_url, display_order: existing.length });
     return Astro.redirect('/admin/servicios');
   }
   error = 'El título es obligatorio.';
@@ -31,12 +32,16 @@ if (Astro.request.method === 'POST') {
 
 <AdminLayout title="Nuevo servicio">
   <h1 class="text-2xl font-bold">Nuevo servicio o curso</h1>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+    Se crea oculto hasta que lo actives, así que puedes tomarte tu tiempo para completarlo con calma.
+  </p>
 
   <form method="POST" class="glass-card mt-6 max-w-xl space-y-4 p-6">
-    {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">{error}</p>}
+    {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-700">{error}</p>}
 
     <div>
       <label class="mb-1 block text-sm font-semibold" for="category">Categoría</label>
+      <p class="mb-1 text-xs text-[var(--color-text-muted)]">Define en qué grupo de la página principal aparece.</p>
       <select id="category" name="category" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">
         <option value="consultoria">Asesoría B2B</option>
         <option value="curso">Curso / Formación</option>
@@ -53,13 +58,16 @@ if (Astro.request.method === 'POST') {
         <span>/servicios/</span>
         <input id="slug" name="slug" placeholder="se genera solo desde el título si lo dejas vacío" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
       </div>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">Tranquila, no necesitas tocar esto — se genera solo.</p>
     </div>
     <div>
-      <label class="mb-1 block text-sm font-semibold" for="description">Descripción (se usa en la tarjeta y en la página propia del servicio)</label>
+      <label class="mb-1 block text-sm font-semibold" for="description">Descripción</label>
+      <p class="mb-1 text-xs text-[var(--color-text-muted)]">Se usa tanto en la tarjeta pequeña como en la página propia de este servicio — puedes escribir varios párrafos.</p>
       <textarea id="description" name="description" rows="5" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]"></textarea>
     </div>
 
     <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="JPEG, PNG o WebP, máx 10 MB" />
+    <FileUploader field="video_url" label="Video (opcional)" accept="video/*" folder="servicios-video" hint="MP4, máx 200 MB — se muestra en la página propia del servicio" isVideo={true} />
 
     <div class="grid gap-4 sm:grid-cols-2">
       <div>
@@ -68,7 +76,8 @@ if (Astro.request.method === 'POST') {
       </div>
       <div>
         <label class="mb-1 block text-sm font-semibold" for="cta_url">Link del botón</label>
-        <input id="cta_url" name="cta_url" placeholder="https://wa.me/..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        <input id="cta_url" name="cta_url" placeholder="https://wa.me/57..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        <p class="mt-1 text-xs text-[var(--color-text-muted)]">Pega aquí tu link de WhatsApp (o cualquier otro enlace) — es a donde va la persona al hacer clic.</p>
       </div>
     </div>
 

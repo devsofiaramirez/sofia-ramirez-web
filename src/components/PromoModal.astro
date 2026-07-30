@@ -1,16 +1,19 @@
 ---
 // Modal publicitario configurable desde /admin/configuracion.
 // Se renderiza server-side (mismo proyecto Astro+D1, sin necesidad de fetch cross-domain);
-// el script solo controla cuándo mostrarlo y precarga la imagen para evitar el flash/colapso visual.
+// el script solo controla cuándo mostrarlo y precarga el media para evitar el flash/colapso visual.
+// Si hay video Y foto cargados, el video gana (es el formato más llamativo para una promo).
 interface Props {
   enabled: boolean;
   image?: string;
+  videoUrl?: string;
   text?: string;
   buttonText?: string;
   buttonUrl?: string;
 }
-const { enabled, image, text, buttonText, buttonUrl } = Astro.props;
-const shouldRender = enabled && !!image;
+const { enabled, image, videoUrl, text, buttonText, buttonUrl } = Astro.props;
+const hasVideo = !!videoUrl;
+const shouldRender = enabled && (hasVideo || !!image);
 ---
 
 {shouldRender && (
@@ -26,7 +29,11 @@ const shouldRender = enabled && !!image;
       >
         ✕
       </button>
-      <img id="promo-modal-image" src={image} alt="Promoción" width="480" height="480" class="aspect-square w-full object-cover" />
+      {hasVideo ? (
+        <video id="promo-modal-media" src={videoUrl} class="aspect-square w-full object-cover" autoplay muted loop playsinline controls></video>
+      ) : (
+        <img id="promo-modal-media" src={image} alt="Promoción" width="480" height="480" class="aspect-square w-full object-cover" />
+      )}
       <div class="p-6 text-center">
         {text && <p class="mb-4 text-[var(--color-text)]">{text}</p>}
         {buttonUrl && (
@@ -40,28 +47,30 @@ const shouldRender = enabled && !!image;
 )}
 
 {shouldRender && (
-  <script>
+  <script define:vars={{ hasVideo }} is:inline>
     const backdrop = document.getElementById('promo-modal-backdrop');
     const closeBtn = document.getElementById('promo-modal-close');
-    const img = document.getElementById('promo-modal-image') as HTMLImageElement | null;
+    const media = document.getElementById('promo-modal-media');
 
     function closeModal() {
       backdrop?.classList.add('hidden');
       backdrop?.classList.remove('flex');
     }
 
-    if (backdrop && img && !sessionStorage.getItem('promoModalShown')) {
+    if (backdrop && media && !sessionStorage.getItem('promoModalShown')) {
       const show = () => {
         backdrop.classList.remove('hidden');
         backdrop.classList.add('flex');
         sessionStorage.setItem('promoModalShown', '1');
       };
       // Precargar antes de mostrar para evitar el colapso visual mientras carga.
-      if (img.complete) {
+      const readyEvent = hasVideo ? 'loadeddata' : 'load';
+      const isReady = hasVideo ? media.readyState >= 2 : media.complete;
+      if (isReady) {
         setTimeout(show, 1200);
       } else {
-        img.addEventListener('load', () => setTimeout(show, 300));
-        img.addEventListener('error', () => {}); // si falla la imagen, simplemente no se muestra
+        media.addEventListener(readyEvent, () => setTimeout(show, 300));
+        media.addEventListener('error', () => {}); // si falla el media, simplemente no se muestra
       }
     }
 

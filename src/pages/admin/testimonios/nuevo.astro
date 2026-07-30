@@ -28,9 +28,12 @@ if (Astro.request.method === 'POST') {
 
 <AdminLayout title="Nuevo testimonio">
   <h1 class="text-2xl font-bold">Nuevo testimonio</h1>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+    Con el nombre y algo concreto que la persona logró alcanza — no hace falta que sea perfecto.
+  </p>
 
   <form method="POST" class="glass-card mt-6 max-w-xl space-y-4 p-6">
-    {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">{error}</p>}
+    {error && <p class="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-700">{error}</p>}
 
     <div class="grid gap-4 sm:grid-cols-2">
       <div>

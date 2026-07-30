@@ -84,17 +84,23 @@ const serviceJsonLd = service && {
               </div>
             </div>
 
-            <div data-reveal>
+            <div class="flex flex-col gap-6" data-reveal>
               {service.image_url ? (
                 <img
                   src={service.image_url}
                   alt={service.title}
                   width="640"
                   height="480"
-                  class="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_0_60px_-20px_rgba(201,162,39,0.35)]"
+                  class="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_0_60px_-20px_rgba(230,57,70,0.3)]"
                 />
               ) : (
                 <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" />
+              )}
+
+              {service.video_url && (
+                <video controls preload="none" poster={service.image_url ?? undefined} class="w-full rounded-2xl" style="aspect-ratio: 16/9;">
+                  <source src={service.video_url} />
+                </video>
               )}
             </div>
           </div>

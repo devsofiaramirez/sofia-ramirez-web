@@ -16,7 +16,7 @@ if (Astro.request.method === 'POST') {
     'whatsapp_number', 'whatsapp_message',
     'social_instagram', 'social_facebook', 'social_tiktok', 'social_linkedin',
     'contact_email',
-    'promo_modal_image', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
+    'promo_modal_image', 'promo_modal_video_url', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
   ];
   const entries: Record<string, string> = {};
   for (const key of keys) entries[key] = form.get(key)?.toString() ?? '';
@@ -31,14 +31,18 @@ const settings = await getSiteSettings(db);
 
 <AdminLayout title="Configuración">
   <h1 class="text-2xl font-bold">Configuración del sitio</h1>
-  <p class="mt-1 text-sm text-[var(--color-text-muted)]">Textos del Hero, contacto, redes y modal publicitario.</p>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+    Aquí controlas los textos del Hero, tu contacto, tus redes y el modal publicitario. Todo lo que
+    guardes aquí se ve en la web al instante — no tienes que publicar ni esperar nada.
+  </p>
 
-  {saved && <p class="mt-4 rounded-lg bg-[var(--color-gold)]/10 px-4 py-2 text-sm text-[var(--color-gold)]">Cambios guardados.</p>}
+  {saved && <p class="mt-4 rounded-lg bg-[var(--color-gold)]/10 px-4 py-2 text-sm font-semibold text-[var(--color-gold)]">✓ Listo, ya quedó guardado y visible en el sitio.</p>}
 
   <form method="POST" class="mt-8 space-y-10">
     <section class="glass-card p-6">
-      <h2 class="mb-4 font-bold">Hero</h2>
-      <div class="space-y-4">
+      <h2 class="font-bold">Hero</h2>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">Es lo primero que ve cualquiera que entre a tu página.</p>
+      <div class="mt-4 space-y-4">
         <div>
           <label class="mb-1 block text-sm font-semibold" for="hero_title">Título principal</label>
           <input id="hero_title" name="hero_title" value={settings.hero_title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
@@ -48,21 +52,26 @@ const settings = await getSiteSettings(db);
           <textarea id="hero_subtitle" name="hero_subtitle" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{settings.hero_subtitle}</textarea>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="hero_video_url">Video (URL de YouTube o Vimeo)</label>
+          <label class="mb-1 block text-sm font-semibold" for="hero_video_url">Video de presentación (opcional)</label>
           <input id="hero_video_url" name="hero_video_url" value={settings.hero_video_url} placeholder="https://youtube.com/watch?v=..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">Pega el link de YouTube o Vimeo tal cual lo copias del navegador. Si lo dejas vacío, simplemente no aparece el botón de "Ver video" — no pasa nada.</p>
         </div>
       </div>
     </section>
 
     <section class="glass-card p-6">
-      <h2 class="mb-4 font-bold">Contacto y redes</h2>
-      <div class="grid gap-4 sm:grid-cols-2">
+      <h2 class="font-bold">Contacto y redes</h2>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+        Tip: si dejas vacía cualquiera de las redes de abajo, ese ícono simplemente no aparece en la página — no necesitas "desactivarlo" en ningún otro lado.
+      </p>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="whatsapp_number">Teléfono WhatsApp (con código de país, solo números)</label>
+          <label class="mb-1 block text-sm font-semibold" for="whatsapp_number">Teléfono de WhatsApp</label>
           <input id="whatsapp_number" name="whatsapp_number" value={settings.whatsapp_number} placeholder="573000000000" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">Con código de país y sin espacios ni el símbolo +. Ejemplo: 573001234567.</p>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="whatsapp_message">Mensaje predefinido</label>
+          <label class="mb-1 block text-sm font-semibold" for="whatsapp_message">Mensaje que llega ya escrito</label>
           <input id="whatsapp_message" name="whatsapp_message" value={settings.whatsapp_message} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
         <div>
@@ -70,34 +79,39 @@ const settings = await getSiteSettings(db);
           <input id="contact_email" name="contact_email" type="email" value={settings.contact_email} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="social_instagram">Instagram (URL)</label>
-          <input id="social_instagram" name="social_instagram" value={settings.social_instagram} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <label class="mb-1 block text-sm font-semibold" for="social_instagram">Instagram</label>
+          <input id="social_instagram" name="social_instagram" placeholder="https://instagram.com/tu_usuario" value={settings.social_instagram} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="social_facebook">Facebook (URL)</label>
-          <input id="social_facebook" name="social_facebook" value={settings.social_facebook} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <label class="mb-1 block text-sm font-semibold" for="social_facebook">Facebook</label>
+          <input id="social_facebook" name="social_facebook" placeholder="https://facebook.com/tu_pagina" value={settings.social_facebook} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="social_tiktok">TikTok (URL)</label>
-          <input id="social_tiktok" name="social_tiktok" value={settings.social_tiktok} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <label class="mb-1 block text-sm font-semibold" for="social_tiktok">TikTok</label>
+          <input id="social_tiktok" name="social_tiktok" placeholder="https://tiktok.com/@tu_usuario" value={settings.social_tiktok} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-semibold" for="social_linkedin">LinkedIn (URL)</label>
-          <input id="social_linkedin" name="social_linkedin" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <label class="mb-1 block text-sm font-semibold" for="social_linkedin">LinkedIn</label>
+          <input id="social_linkedin" name="social_linkedin" placeholder="https://linkedin.com/in/tu_perfil" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
         </div>
       </div>
     </section>
 
     <section id="modal" class="glass-card p-6">
-      <div class="mb-4 flex items-center justify-between">
+      <div class="mb-1 flex items-center justify-between">
         <h2 class="font-bold">Modal publicitario</h2>
         <label class="flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" name="promo_modal_enabled" checked={settings.promo_modal_enabled === '1'} class="h-4 w-4 accent-[var(--color-gold)]" />
           Activado
         </label>
       </div>
+      <p class="text-xs text-[var(--color-text-muted)]">
+        Es la ventana emergente que le sale a la gente al entrar a tu página — ideal para una promoción puntual.
+        Si el interruptor de arriba está apagado, no le sale a nadie, así puedas dejar todo cargado y listo
+        para activarlo cuando quieras.
+      </p>
 
-      <div class="space-y-4">
+      <div class="mt-4 space-y-4">
         <FileUploader
           field="promo_modal_image"
           label="Imagen promocional"
@@ -105,6 +119,15 @@ const settings = await getSiteSettings(db);
           folder="promociones"
           hint="JPEG, PNG o WebP, máx 10 MB"
           currentValue={settings.promo_modal_image}
+        />
+        <FileUploader
+          field="promo_modal_video_url"
+          label="Video promocional (opcional)"
+          accept="video/*"
+          folder="promociones-video"
+          hint="MP4, máx 200 MB — si subes video, se muestra el video en vez de la imagen"
+          isVideo={true}
+          currentValue={settings.promo_modal_video_url}
         />
         <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_text">Texto de la oferta</label>

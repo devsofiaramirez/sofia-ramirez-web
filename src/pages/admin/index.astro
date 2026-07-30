@@ -15,8 +15,11 @@ const cards = [
 ---
 
 <AdminLayout title="Dashboard">
-  <h1 class="text-2xl font-bold">Hola, {Astro.locals.user.name}</h1>
-  <p class="mt-1 text-sm text-[var(--color-text-muted)]">Panel de administración de sofiaramirez.com</p>
+  <h1 class="text-2xl font-bold">Hola, {Astro.locals.user.name} 👋</h1>
+  <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+    Desde aquí manejas todo tu sitio: textos, servicios, testimonios y la promo del momento.
+    Cualquier cambio que guardes se ve al instante, sin que tengas que avisarle a nadie.
+  </p>
 
   <div class="mt-8 grid gap-6 sm:grid-cols-2">
     {cards.map((card) => (

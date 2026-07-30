@@ -34,10 +34,13 @@ const testimonials = await getAllTestimonials(db);
 ---
 
 <AdminLayout title="Testimonios">
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-2 flex items-center justify-between">
     <h1 class="text-2xl font-bold">Testimonios</h1>
     <a href="/admin/testimonios/nuevo" class="btn-gold !py-2 !px-4 text-sm">+ Nuevo</a>
   </div>
+  <p class="mb-6 text-sm text-[var(--color-text-muted)]">
+    Estos son los casos de éxito que la gente ve antes de escribirte. Entre más reales y específicos, más confianza generan.
+  </p>
 
   <div class="glass-card overflow-hidden !p-0">
     {testimonials.map((t, i) => (
@@ -48,7 +51,7 @@ const testimonials = await getAllTestimonials(db);
           <p class="text-xs text-[var(--color-text-muted)]">{t.author_role}</p>
         </div>
 
-        <span class={`rounded px-2 py-1 text-xs font-bold ${t.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-white/5 text-[var(--color-text-muted)]'}`}>
+        <span class={`rounded px-2 py-1 text-xs font-bold ${t.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
           {t.is_active ? 'Activo' : 'Oculto'}
         </span>
 
@@ -76,10 +79,14 @@ const testimonials = await getAllTestimonials(db);
         <form method="POST" onsubmit="return confirm('¿Eliminar este testimonio?')">
           <input type="hidden" name="action" value="delete" />
           <input type="hidden" name="id" value={t.id} />
-          <button type="submit" class="text-sm text-red-400 hover:text-red-300">Eliminar</button>
+          <button type="submit" class="text-sm text-red-600 hover:text-red-700">Eliminar</button>
         </form>
       </div>
     ))}
-    {testimonials.length === 0 && <p class="p-10 text-center text-[var(--color-text-muted)]">No hay testimonios aún.</p>}
+    {testimonials.length === 0 && (
+      <p class="p-10 text-center text-[var(--color-text-muted)]">
+        Aún no has agregado testimonios — pulsa "+ Nuevo" arriba para sumar el primer caso de éxito.
+      </p>
+    )}
   </div>
 </AdminLayout>

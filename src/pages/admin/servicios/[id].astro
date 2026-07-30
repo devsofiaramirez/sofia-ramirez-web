@@ -21,6 +21,7 @@ if (Astro.request.method === 'POST') {
     description: form.get('description')?.toString().trim() ?? '',
     category: form.get('category')?.toString(),
     image_url: form.get('image_url')?.toString() || null,
+    video_url: form.get('video_url')?.toString() || null,
     cta_text: form.get('cta_text')?.toString().trim() || 'Más información',
     cta_url: form.get('cta_url')?.toString() || null,
   });
@@ -59,6 +60,7 @@ if (Astro.request.method === 'POST') {
     </div>
 
     <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="JPEG, PNG o WebP, máx 10 MB" currentValue={service.image_url} />
+    <FileUploader field="video_url" label="Video (opcional)" accept="video/*" folder="servicios-video" hint="MP4, máx 200 MB — se muestra en la página propia del servicio" isVideo={true} currentValue={service.video_url} />
 
     <div class="grid gap-4 sm:grid-cols-2">
       <div>
@@ -68,6 +70,7 @@ if (Astro.request.method === 'POST') {
       <div>
         <label class="mb-1 block text-sm font-semibold" for="cta_url">Link del botón</label>
         <input id="cta_url" name="cta_url" value={service.cta_url ?? ''} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+        <p class="mt-1 text-xs text-[var(--color-text-muted)]">Pega aquí tu link de WhatsApp (o cualquier otro enlace) — es a donde va la persona al hacer clic.</p>
       </div>
     </div>
 

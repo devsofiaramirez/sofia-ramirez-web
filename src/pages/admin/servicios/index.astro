@@ -40,10 +40,14 @@ const categoryLabel: Record<string, string> = {
 ---
 
 <AdminLayout title="Servicios y cursos">
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-2 flex items-center justify-between">
     <h1 class="text-2xl font-bold">Servicios y cursos</h1>
     <a href="/admin/servicios/nuevo" class="btn-gold !py-2 !px-4 text-sm">+ Nuevo</a>
   </div>
+  <p class="mb-6 text-sm text-[var(--color-text-muted)]">
+    Usa las flechas para ordenarlos como quieras que aparezcan en la página — "Ocultar" los quita de la web
+    sin borrarlos, ideal si quieres pausar un curso temporalmente.
+  </p>
 
   <div class="glass-card overflow-hidden !p-0">
     {services.map((s, i) => (
@@ -54,7 +58,7 @@ const categoryLabel: Record<string, string> = {
           <p class="text-xs text-[var(--color-text-muted)]">{categoryLabel[s.category] ?? s.category}</p>
         </div>
 
-        <span class={`rounded px-2 py-1 text-xs font-bold ${s.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-white/5 text-[var(--color-text-muted)]'}`}>
+        <span class={`rounded px-2 py-1 text-xs font-bold ${s.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
           {s.is_active ? 'Activo' : 'Oculto'}
         </span>
 
@@ -82,10 +86,14 @@ const categoryLabel: Record<string, string> = {
         <form method="POST" onsubmit="return confirm('¿Eliminar este servicio?')">
           <input type="hidden" name="action" value="delete" />
           <input type="hidden" name="id" value={s.id} />
-          <button type="submit" class="text-sm text-red-400 hover:text-red-300">Eliminar</button>
+          <button type="submit" class="text-sm text-red-600 hover:text-red-700">Eliminar</button>
         </form>
       </div>
     ))}
-    {services.length === 0 && <p class="p-10 text-center text-[var(--color-text-muted)]">No hay servicios aún.</p>}
+    {services.length === 0 && (
+      <p class="p-10 text-center text-[var(--color-text-muted)]">
+        Todavía no tienes servicios o cursos cargados — pulsa "+ Nuevo" arriba para crear el primero.
+      </p>
+    )}
   </div>
 </AdminLayout>
