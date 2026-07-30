@@ -6,14 +6,14 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "sofia-ramirez-db"
-database_id = "PENDIENTE-wrangler-d1-create"
+database_id = "ac60445b-2f04-4e48-a90c-1741f89b0cfd"
 
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "sofia-ramirez-media"
 
 [vars]
-R2_PUBLIC_URL = "PENDIENTE-URL-publica-del-bucket"
+R2_PUBLIC_URL = "https://pub-db5c969609824f699c62b75fb2dff570.r2.dev"
 
 # Secretos (NUNCA en este archivo, se configuran con `wrangler pages secret put`):
 #   JWT_SECRET
