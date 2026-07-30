@@ -1,17 +1,17 @@
 ---
 // Animación de marca: rutas de vuelo cruzando un globo abstracto (China ⇄ Colombia + rutas secundarias).
 // SVG + SMIL (<animateMotion>), sin JS ni librerías — barato en CPU/INP y se repite indefinidamente.
+// Las 3 rutas conectan los mismos dos puntos reales (China ⇄ Colombia) con curvas distintas,
+// simulando varias frecuencias de vuelo activas — ninguna termina fuera del globo.
 const routes = [
   { id: 'route-main', d: 'M 730,120 C 800,-40 330,-40 460,255', color: 'var(--color-gold-light)', dur: '9s', begin: '0s' },
-  { id: 'route-b', d: 'M 460,255 C 380,340 250,300 190,190', color: 'var(--color-teal)', dur: '7s', begin: '-2.4s' },
-  { id: 'route-c', d: 'M 730,120 C 850,90 980,150 1020,220', color: 'var(--color-sky)', dur: '8s', begin: '-4.8s' },
+  { id: 'route-b', d: 'M 730,120 C 780,420 280,420 460,255', color: 'var(--color-teal)', dur: '10s', begin: '-3.3s' },
+  { id: 'route-c', d: 'M 730,120 C 650,70 530,150 460,255', color: 'var(--color-sky)', dur: '6s', begin: '-1.8s' },
 ];
 
 const cities = [
   { x: 730, y: 120, label: 'China' },
-  { x: 460, y: 255, label: 'Cúcuta, Colombia' },
-  { x: 190, y: 190, label: '' },
-  { x: 1020, y: 220, label: '' },
+  { x: 460, y: 255, label: 'Colombia' },
 ];
 ---
 
@@ -34,7 +34,7 @@ const cities = [
       </defs>
 
       <!-- Globo abstracto (wireframe) -->
-      <g stroke="var(--color-border-teal)" stroke-width="1.5" fill="none">
+      <g stroke="var(--color-border-teal)" stroke-width="2" fill="none">
         <circle cx="600" cy="200" r="170" fill="url(#globe-fill)" />
         <ellipse cx="600" cy="200" rx="170" ry="60" />
         <ellipse cx="600" cy="150" rx="145" ry="30" />
@@ -44,7 +44,7 @@ const cities = [
 
       <!-- Rutas de vuelo -->
       {routes.map((r) => (
-        <path id={r.id} d={r.d} fill="none" stroke={r.color} stroke-width="1.5" stroke-dasharray="5 7" opacity="0.55" />
+        <path id={r.id} d={r.d} fill="none" stroke={r.color} stroke-width="2" stroke-dasharray="5 7" opacity="0.75" />
       ))}
 
       <!-- Ciudades: punto + pulso de radar -->
