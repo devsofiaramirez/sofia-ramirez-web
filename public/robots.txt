@@ -23,3 +23,4 @@ Allow: /
 # si prefiere restringirlos.
 
 Sitemap: https://sofiaramirez.com/sitemap-index.xml
+Sitemap: https://sofiaramirez.com/sitemap-services.xml

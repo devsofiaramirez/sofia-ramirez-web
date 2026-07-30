@@ -1,19 +1,46 @@
 @import "tailwindcss";
 
-/* ── Tema: Premium / Dark Luxury Industrial ─────────────────────────────── */
+/* ── Tema: Logística Transparente (claro por defecto) ───────────────────
+   El panel /admin usa .theme-dark (ver abajo) para quedarse en el tema
+   oscuro anterior — es herramienta interna, no parte de la marca pública. */
 @theme {
-  --color-bg: #0b0b0d;
-  --color-bg-elevated: #17171b;
-  --color-bg-elevated-2: #1f1f24;
-  --color-text: #f5f3ee;
-  --color-text-muted: #a8a6a1;
-  --color-gold: #c9a227;
-  --color-gold-light: #e8c766;
-  --color-gold-dark: #8a6d1a;
-  --color-border: rgba(201, 162, 39, 0.18);
+  --color-bg: #f8f9fa;
+  --color-bg-elevated: #edf1f4;
+  --color-bg-elevated-2: #e2e8f0;
+  --color-text: #0a2540;
+  --color-text-muted: #4a5568;
+  --color-gold: #e63946;
+  --color-gold-light: #ef6b76;
+  --color-gold-dark: #b32330;
+  --color-teal: #007bff;
+  --color-teal-light: #5aa9ff;
+  --color-sky: #4da3ff;
+  --color-star: #f59e0b;
+  --color-on-accent: #ffffff;
+  --color-border: rgba(10, 37, 64, 0.08);
+  --color-border-teal: rgba(0, 123, 255, 0.15);
 
   --font-display: "Manrope", "Segoe UI", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;
+}
+
+/* ── Tema oscuro, solo para /admin (herramienta interna) ─────────────────── */
+.theme-dark {
+  --color-bg: #070b0d;
+  --color-bg-elevated: #0e161a;
+  --color-bg-elevated-2: #152229;
+  --color-text: #f5f3ee;
+  --color-text-muted: #9ba1ad;
+  --color-gold: #c9a227;
+  --color-gold-light: #e8c766;
+  --color-gold-dark: #8a6d1a;
+  --color-teal: #2dd4bf;
+  --color-teal-light: #8be9dc;
+  --color-sky: #38bdf8;
+  --color-star: #f5c842;
+  --color-on-accent: #0b0b0d;
+  --color-border: rgba(201, 162, 39, 0.18);
+  --color-border-teal: rgba(45, 212, 191, 0.22);
 }
 
 /* ── Reset base (regla no negociable: box-sizing global) ────────────────── */
@@ -80,11 +107,12 @@ video {
   letter-spacing: -0.01em;
 }
 
+/* +20% respecto al valor original: el diseño claro necesita más aire. */
 .section-padding {
-  padding-block: clamp(3rem, 6vw, 6rem);
+  padding-block: clamp(3.5rem, 7vw, 7.5rem);
 }
 
-/* ── Utilidades de marca: glassmorphism + glow dorado ───────────────────── */
+/* ── Cards (admin, tema oscuro): glassmorphism + glow ────────────────────── */
 .glass-card {
   background: color-mix(in srgb, var(--color-bg-elevated) 70%, transparent);
   backdrop-filter: blur(16px);
@@ -100,8 +128,34 @@ video {
   transform: translateY(-4px);
 }
 
+/* ── Cards (sitio público, tema claro): blancas + sombra suave ──────────── */
+.card-soft {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card-soft:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.09);
+}
+
+/* ── Tag pill (etiquetas de categoría, sitio público) ───────────────────── */
+.tag-pill {
+  background: #ebf8ff;
+  color: var(--color-text);
+}
+
 .gold-gradient-text {
   background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold) 45%, var(--color-gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.teal-gradient-text {
+  background: linear-gradient(135deg, var(--color-teal-light), var(--color-teal) 55%, var(--color-sky));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -116,7 +170,7 @@ video {
   padding: 0.85rem 1.75rem;
   font-weight: 600;
   background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold-dark));
-  color: #0b0b0d;
+  color: var(--color-on-accent);
   transition: filter 0.25s ease, transform 0.25s ease;
 }
 
@@ -133,14 +187,16 @@ video {
   border-radius: 999px;
   padding: 0.85rem 1.75rem;
   font-weight: 600;
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  transition: border-color 0.25s ease, background-color 0.25s ease;
+  border: 1.5px solid var(--color-gold);
+  color: var(--color-gold);
+  background: transparent;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 
 .btn-ghost:hover {
-  border-color: var(--color-gold);
-  background: color-mix(in srgb, var(--color-gold) 8%, transparent);
+  background: var(--color-gold);
+  color: var(--color-on-accent);
+  transform: translateY(-2px);
 }
 
 /* ── Animación de entrada al hacer scroll (sutil, sin libs pesadas) ─────── */
@@ -161,6 +217,68 @@ video {
     opacity: 1;
     transform: none;
   }
+}
+
+.badge-ring {
+  position: relative;
+}
+
+.badge-ring::before {
+  content: "";
+  position: absolute;
+  inset: -0.6rem;
+  border-radius: 999px;
+  background: conic-gradient(
+    from var(--ring-angle, 0deg),
+    var(--color-gold-light),
+    var(--color-gold-dark),
+    var(--color-gold-light)
+  );
+  opacity: 0.55;
+  filter: blur(2px);
+  animation: spin-slow 14s linear infinite;
+  z-index: -1;
+}
+
+@keyframes spin-slow {
+  to {
+    --ring-angle: 360deg;
+  }
+}
+
+@property --ring-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-ring::before,
+  .animate-float {
+    animation: none;
+  }
+}
+
+/* ── Footer: excepción deliberada — se queda oscuro sobre sitio claro ───── */
+.footer-scope {
+  background: #0a2540;
+  --color-text: #ffffff;
+  --color-text-muted: #cbd5e1;
+  --color-border: rgba(255, 255, 255, 0.12);
 }
 
 /* ── Placeholder visual mientras llegan las fotos reales ────────────────── */

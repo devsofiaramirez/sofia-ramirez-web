@@ -1,0 +1,131 @@
+---
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PlaceholderImage from '@/components/PlaceholderImage.astro';
+import { getSiteSettings, getServiceBySlug, getActiveServices } from '@/lib/db';
+import { buildWhatsappUrl } from '@/lib/utils';
+
+const db = Astro.locals.runtime.env.DB;
+const slug = Astro.params.slug!;
+
+const [settings, service, allServices] = await Promise.all([
+  getSiteSettings(db),
+  getServiceBySlug(db, slug),
+  getActiveServices(db),
+]);
+
+if (!service) {
+  Astro.response.status = 404;
+}
+
+const categoryMeta: Record<string, { label: string; icon: string }> = {
+  consultoria: { label: 'Asesoría B2B', icon: '🤝' },
+  curso: { label: 'Formación', icon: '🎓' },
+  bodega: { label: 'Logística', icon: '📦' },
+};
+
+const whatsappUrl = service ? buildWhatsappUrl(settings.whatsapp_number, `${settings.whatsapp_message} (${service.title})`) : '';
+const others = service ? allServices.filter((s) => s.id !== service.id) : [];
+
+const breadcrumbJsonLd = service && {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL('/', Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: 'Servicios', item: new URL('/#servicios', Astro.site).toString() },
+    { '@type': 'ListItem', position: 3, name: service.title, item: new URL(`/servicios/${service.slug}`, Astro.site).toString() },
+  ],
+};
+
+const serviceJsonLd = service && {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: service.title,
+  description: service.description,
+  provider: { '@type': 'Person', name: 'Sofía Ramírez' },
+  areaServed: ['CO', 'CN'],
+};
+---
+
+<BaseLayout
+  title={service ? service.title : 'Servicio no encontrado'}
+  description={service ? service.description.slice(0, 160) : 'Este servicio ya no está disponible.'}
+  image={service?.image_url ?? undefined}
+  settings={settings}
+>
+  {service ? (
+    <>
+      <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} is:inline />
+      <script type="application/ld+json" set:html={JSON.stringify(serviceJsonLd)} is:inline />
+
+      <section class="section-padding pt-32 md:pt-40">
+        <div class="container">
+          <nav class="mb-8 text-sm text-[var(--color-text-muted)]" aria-label="Breadcrumb">
+            <a href="/" class="hover:text-[var(--color-teal)]">Inicio</a>
+            <span class="mx-2">/</span>
+            <a href="/#servicios" class="hover:text-[var(--color-teal)]">Servicios</a>
+            <span class="mx-2">/</span>
+            <span class="text-[var(--color-text)]">{service.title}</span>
+          </nav>
+
+          <div class="grid gap-12 md:grid-cols-[1.1fr_0.9fr] md:items-start">
+            <div data-reveal>
+              <span class="tag-pill mb-4 flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider">
+                <span aria-hidden="true">{categoryMeta[service.category]?.icon ?? '•'}</span> {categoryMeta[service.category]?.label ?? service.category}
+              </span>
+              <h1 class="h1-display font-extrabold">{service.title}</h1>
+              <p class="mt-6 whitespace-pre-line text-lg text-[var(--color-text-muted)]">{service.description}</p>
+
+              <div class="mt-10 flex flex-wrap gap-4">
+                <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold">Consultar por WhatsApp</a>
+                {service.cta_url && (
+                  <a href={service.cta_url} target="_blank" rel="noopener" class="btn-ghost">{service.cta_text}</a>
+                )}
+              </div>
+            </div>
+
+            <div data-reveal>
+              {service.image_url ? (
+                <img
+                  src={service.image_url}
+                  alt={service.title}
+                  width="640"
+                  height="480"
+                  class="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_0_60px_-20px_rgba(201,162,39,0.35)]"
+                />
+              ) : (
+                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {others.length > 0 && (
+        <section class="section-padding border-t border-[var(--color-border)]">
+          <div class="container">
+            <h2 class="h2-display font-bold" data-reveal>Otros servicios</h2>
+            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {others.map((o) => (
+                <a href={`/servicios/${o.slug}`} class="card-soft p-6" data-reveal>
+                  <span class="tag-pill mb-2 flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider">
+                    <span aria-hidden="true">{categoryMeta[o.category]?.icon ?? '•'}</span> {categoryMeta[o.category]?.label ?? o.category}
+                  </span>
+                  <p class="font-bold">{o.title}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+    <section class="section-padding pt-40 text-center">
+      <div class="container">
+        <h1 class="h2-display font-bold">Servicio no encontrado</h1>
+        <p class="mt-4 text-[var(--color-text-muted)]">Puede que este servicio ya no esté disponible.</p>
+        <a href="/#servicios" class="btn-gold mt-8 inline-flex">Ver servicios disponibles</a>
+      </div>
+    </section>
+  )}
+</BaseLayout>

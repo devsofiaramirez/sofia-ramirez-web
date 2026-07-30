@@ -1,4 +1,5 @@
 // Todas las queries a D1, tipadas. Sin ORM: SQL puro con prepare().bind().
+import { slugify } from './utils';
 
 export type User = {
   id: number; name: string; email: string; password_hash: string;
@@ -9,7 +10,7 @@ export type User = {
 export type ServiceCategory = 'consultoria' | 'curso' | 'bodega';
 
 export type Service = {
-  id: number; category: ServiceCategory; title: string; description: string;
+  id: number; category: ServiceCategory; title: string; slug: string; description: string;
   image_url: string | null; cta_text: string; cta_url: string | null;
   is_active: number; display_order: number;
   created_at: string; updated_at: string;
@@ -71,6 +72,27 @@ export async function getServiceById(db: D1Database, id: number) {
   return db.prepare('SELECT * FROM services WHERE id = ?').bind(id).first<Service>();
 }
 
+export async function getServiceBySlug(db: D1Database, slug: string) {
+  return db.prepare('SELECT * FROM services WHERE slug = ? AND is_active = 1').bind(slug).first<Service>();
+}
+
+export async function isSlugTaken(db: D1Database, slug: string, excludeId?: number): Promise<boolean> {
+  const row = await db.prepare('SELECT id FROM services WHERE slug = ? AND id != ?').bind(slug, excludeId ?? -1).first<{ id: number }>();
+  return !!row;
+}
+
+/** A partir de un título (o un slug ya escrito a mano), arma un slug único agregando -2, -3... si hace falta. */
+export async function generateUniqueServiceSlug(db: D1Database, base: string, excludeId?: number): Promise<string> {
+  const root = slugify(base);
+  let candidate = root;
+  let n = 2;
+  while (await isSlugTaken(db, candidate, excludeId)) {
+    candidate = `${root}-${n}`;
+    n++;
+  }
+  return candidate;
+}
+
 export async function updateService(db: D1Database, id: number, data: Record<string, unknown>) {
   const keys = Object.keys(data);
   if (keys.length === 0) return;
@@ -82,12 +104,12 @@ export async function updateService(db: D1Database, id: number, data: Record<str
 }
 
 export async function createService(db: D1Database, data: {
-  category: ServiceCategory; title: string; description: string;
+  category: ServiceCategory; title: string; slug: string; description: string;
   image_url?: string | null; cta_text: string; cta_url?: string | null; display_order: number;
 }) {
   return db.prepare(
-    'INSERT INTO services (category, title, description, image_url, cta_text, cta_url, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).bind(data.category, data.title, data.description, data.image_url ?? null, data.cta_text, data.cta_url ?? null, data.display_order).run();
+    'INSERT INTO services (category, title, slug, description, image_url, cta_text, cta_url, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(data.category, data.title, data.slug, data.description, data.image_url ?? null, data.cta_text, data.cta_url ?? null, data.display_order).run();
 }
 
 export async function deleteService(db: D1Database, id: number) {

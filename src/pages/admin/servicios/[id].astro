@@ -2,7 +2,7 @@
 export const prerender = false;
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import FileUploader from '@/components/admin/FileUploader.astro';
-import { getServiceById, updateService } from '@/lib/db';
+import { getServiceById, updateService, generateUniqueServiceSlug } from '@/lib/db';
 
 if (!Astro.locals.user) return Astro.redirect('/admin/login');
 
@@ -13,8 +13,11 @@ if (!service) return Astro.redirect('/admin/servicios');
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
+  const slugInput = form.get('slug')?.toString().trim();
+  const slug = await generateUniqueServiceSlug(db, slugInput || service.title, id);
   await updateService(db, id, {
     title: form.get('title')?.toString().trim(),
+    slug,
     description: form.get('description')?.toString().trim() ?? '',
     category: form.get('category')?.toString(),
     image_url: form.get('image_url')?.toString() || null,
@@ -43,8 +46,16 @@ if (Astro.request.method === 'POST') {
       <input id="title" name="title" required value={service.title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
     </div>
     <div>
-      <label class="mb-1 block text-sm font-semibold" for="description">Descripción</label>
-      <textarea id="description" name="description" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{service.description}</textarea>
+      <label class="mb-1 block text-sm font-semibold" for="slug">URL</label>
+      <div class="flex items-center gap-1 text-sm text-[var(--color-text-muted)]">
+        <span>/servicios/</span>
+        <input id="slug" name="slug" value={service.slug} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+      </div>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">Cambiarla rompe enlaces ya compartidos de esta página.</p>
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-semibold" for="description">Descripción (se usa en la tarjeta y en la página propia del servicio)</label>
+      <textarea id="description" name="description" rows="5" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{service.description}</textarea>
     </div>
 
     <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="JPEG, PNG o WebP, máx 10 MB" currentValue={service.image_url} />

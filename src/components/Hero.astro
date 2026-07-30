@@ -1,5 +1,4 @@
 ---
-import PlaceholderImage from '@/components/PlaceholderImage.astro';
 import { buildWhatsappUrl } from '@/lib/utils';
 
 interface Props {
@@ -12,17 +11,16 @@ interface Props {
 const { title, subtitle, videoUrl, whatsappNumber, whatsappMessage } = Astro.props;
 const whatsappUrl = buildWhatsappUrl(whatsappNumber, whatsappMessage);
 
-// YouTube/Vimeo embed a partir de una URL simple (acepta ambos formatos comunes).
 function toEmbedUrl(url: string): string | null {
   try {
     const u = new URL(url);
     if (u.hostname.includes('youtu')) {
       const id = u.hostname.includes('youtu.be') ? u.pathname.slice(1) : u.searchParams.get('v');
-      return id ? `https://www.youtube.com/embed/${id}` : null;
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : null;
     }
     if (u.hostname.includes('vimeo')) {
       const id = u.pathname.split('/').filter(Boolean).pop();
-      return id ? `https://player.vimeo.com/video/${id}` : null;
+      return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null;
     }
     return null;
   } catch {
@@ -30,23 +28,20 @@ function toEmbedUrl(url: string): string | null {
   }
 }
 const embedUrl = videoUrl ? toEmbedUrl(videoUrl) : null;
+
+const chips = [
+  'Asesoría personalizada, no plantillas',
+  'Bodega propia en Cúcuta',
+  'Cursos 100% prácticos',
+];
 ---
 
-<section class="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
-  <!-- Fondo: resplandores dorados + mapa punteado sutil, decorativo -->
-  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-    <div class="absolute -top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-[var(--color-gold)] opacity-[0.08] blur-[120px]"></div>
-    <div class="absolute bottom-0 left-0 h-[24rem] w-[24rem] rounded-full bg-[var(--color-gold)] opacity-[0.06] blur-[120px]"></div>
-    <div
-      class="absolute inset-0 opacity-[0.15]"
-      style="background-image: radial-gradient(var(--color-gold) 1px, transparent 1px); background-size: 28px 28px;"
-    ></div>
-  </div>
-
-  <div class="container grid items-center gap-12 md:gap-8 md:grid-cols-[1.1fr_0.9fr]">
+<section class="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-32">
+  <div class="container grid items-center gap-16 md:grid-cols-[1.05fr_0.95fr]">
     <div data-reveal>
-      <p class="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
-        Consultora e importadora
+      <p class="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
+        <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-gold)]"></span>
+        Consultora e importadora · China ⇄ Colombia
       </p>
       <h1 class="h1-display font-extrabold">
         {title}
@@ -54,31 +49,69 @@ const embedUrl = videoUrl ? toEmbedUrl(videoUrl) : null;
       <p class="mt-6 max-w-xl text-lg text-[var(--color-text-muted)]">
         {subtitle}
       </p>
+
       <div class="mt-10 flex flex-wrap gap-4">
         <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold">
           Hablar por WhatsApp
         </a>
-        <a href="/#servicios" class="btn-ghost">Ver servicios</a>
+        {embedUrl && (
+          <button type="button" id="hero-video-trigger" class="btn-ghost">
+            <span aria-hidden="true">▶</span> Ver video
+          </button>
+        )}
       </div>
+
+      <ul class="mt-12 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+        {chips.map((chip) => (
+          <li class="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+            <span class="text-[var(--color-gold)]">✓</span> {chip}
+          </li>
+        ))}
+      </ul>
     </div>
 
-    <div class="flex flex-col gap-6" data-reveal>
-      <PlaceholderImage label="Foto corporativa de Sofía (hero, 16:9)" aspect="4/5" class="rounded-3xl shadow-[0_0_60px_-15px_rgba(201,162,39,0.35)]" />
-
-      {embedUrl ? (
-        <div class="overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_0_40px_-15px_rgba(201,162,39,0.4)]" style="aspect-ratio: 16/9;">
-          <iframe
-            src={embedUrl}
-            title="Video de presentación"
-            class="h-full w-full"
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-        </div>
-      ) : (
-        <PlaceholderImage label="Espacio para video de presentación (YouTube/Vimeo) — configurable desde /admin" aspect="16/9" />
-      )}
+    <div class="relative mx-auto w-full max-w-sm" data-reveal>
+      <div class="badge-ring animate-float mx-auto aspect-square w-full max-w-[22rem] overflow-hidden rounded-full shadow-[0_0_70px_-10px_rgba(230,57,70,0.35)]">
+        <img
+          src="/images/hero/sofia-hero.jpg"
+          alt="Sofía Ramírez, consultora e importadora"
+          width="611"
+          height="1024"
+          fetchpriority="high"
+          loading="eager"
+          class="h-full w-full object-cover object-top"
+        />
+      </div>
     </div>
   </div>
 </section>
+
+{embedUrl && (
+  <div id="hero-video-backdrop" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div class="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_0_60px_-15px_rgba(230,57,70,0.4)]" style="aspect-ratio: 16/9;">
+      <button id="hero-video-close" type="button" aria-label="Cerrar" class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white hover:text-[var(--color-gold)]">✕</button>
+      <div id="hero-video-frame" class="h-full w-full"></div>
+    </div>
+  </div>
+  <script define:vars={{ embedUrl }} is:inline>
+    const trigger = document.getElementById('hero-video-trigger');
+    const backdrop = document.getElementById('hero-video-backdrop');
+    const closeBtn = document.getElementById('hero-video-close');
+    const frame = document.getElementById('hero-video-frame');
+
+    function openVideo() {
+      frame.innerHTML = `<iframe src="${embedUrl}" title="Video de presentación" class="h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      backdrop.classList.remove('hidden');
+      backdrop.classList.add('flex');
+    }
+    function closeVideo() {
+      backdrop.classList.add('hidden');
+      backdrop.classList.remove('flex');
+      frame.innerHTML = '';
+    }
+    trigger?.addEventListener('click', openVideo);
+    closeBtn?.addEventListener('click', closeVideo);
+    backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) closeVideo(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideo(); });
+  </script>
+)}

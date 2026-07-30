@@ -2,6 +2,7 @@
 import SEO from '@/components/SEO.astro';
 import BrandLogo from '@/components/BrandLogo.astro';
 import PromoModal from '@/components/PromoModal.astro';
+import AdminAccessLink from '@/components/AdminAccessLink.astro';
 import '@/styles/global.css';
 import { buildWhatsappUrl } from '@/lib/utils';
 
@@ -78,9 +79,9 @@ const websiteJsonLd = {
         </a>
 
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-[var(--color-text-muted)]">
-          <a href="/#servicios" class="hover:text-[var(--color-gold)] transition-colors">Servicios</a>
-          <a href="/#cursos" class="hover:text-[var(--color-gold)] transition-colors">Cursos</a>
-          <a href="/#testimonios" class="hover:text-[var(--color-gold)] transition-colors">Testimonios</a>
+          <a href="/#servicios" class="hover:text-[var(--color-teal)] transition-colors">Servicios</a>
+          <a href="/#cursos" class="hover:text-[var(--color-teal)] transition-colors">Cursos</a>
+          <a href="/#testimonios" class="hover:text-[var(--color-teal)] transition-colors">Testimonios</a>
           <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold !py-2.5 !px-5 text-sm">Escríbenos</a>
         </nav>
 
@@ -101,9 +102,9 @@ const websiteJsonLd = {
         id="mobile-menu"
         class="md:hidden hidden flex-col gap-6 px-6 py-8 text-lg font-medium border-t border-[var(--color-border)] bg-[var(--color-bg)] max-h-[calc(100dvh-72px)] overflow-y-auto"
       >
-        <a href="/#servicios">Servicios</a>
-        <a href="/#cursos">Cursos</a>
-        <a href="/#testimonios">Testimonios</a>
+        <a href="/#servicios" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Servicios</a>
+        <a href="/#cursos" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Cursos</a>
+        <a href="/#testimonios" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Testimonios</a>
         <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold w-fit">Escríbenos por WhatsApp</a>
       </nav>
     </header>
@@ -112,7 +113,7 @@ const websiteJsonLd = {
       <slot />
     </main>
 
-    <footer class="section-padding border-t border-[var(--color-border)]" style="padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));">
+    <footer class="footer-scope section-padding border-t border-[var(--color-border)]" style="padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));">
       <div class="container grid gap-10 md:grid-cols-3">
         <div>
           <BrandLogo variant="full" />
@@ -123,17 +124,17 @@ const websiteJsonLd = {
 
         <div class="text-sm text-[var(--color-text-muted)]">
           <p class="text-[var(--color-text)] font-semibold mb-3">Contacto</p>
-          <p><a href={whatsappUrl} target="_blank" rel="noopener" class="hover:text-[var(--color-gold)]">WhatsApp</a></p>
-          {settings.contact_email && <p><a href={`mailto:${settings.contact_email}`} class="hover:text-[var(--color-gold)]">{settings.contact_email}</a></p>}
+          <p><a href={whatsappUrl} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">WhatsApp</a></p>
+          {settings.contact_email && <p><a href={`mailto:${settings.contact_email}`} class="hover:text-[var(--color-teal)]">{settings.contact_email}</a></p>}
         </div>
 
         <div class="text-sm text-[var(--color-text-muted)]">
           <p class="text-[var(--color-text)] font-semibold mb-3">Redes</p>
           <ul class="space-y-2">
-            {settings.social_instagram && <li><a href={settings.social_instagram} target="_blank" rel="noopener" class="hover:text-[var(--color-gold)]">Instagram</a></li>}
-            {settings.social_facebook && <li><a href={settings.social_facebook} target="_blank" rel="noopener" class="hover:text-[var(--color-gold)]">Facebook</a></li>}
-            {settings.social_tiktok && <li><a href={settings.social_tiktok} target="_blank" rel="noopener" class="hover:text-[var(--color-gold)]">TikTok</a></li>}
-            {settings.social_linkedin && <li><a href={settings.social_linkedin} target="_blank" rel="noopener" class="hover:text-[var(--color-gold)]">LinkedIn</a></li>}
+            {settings.social_instagram && <li><a href={settings.social_instagram} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">Instagram</a></li>}
+            {settings.social_facebook && <li><a href={settings.social_facebook} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">Facebook</a></li>}
+            {settings.social_tiktok && <li><a href={settings.social_tiktok} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">TikTok</a></li>}
+            {settings.social_linkedin && <li><a href={settings.social_linkedin} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">LinkedIn</a></li>}
           </ul>
         </div>
       </div>
@@ -150,6 +151,8 @@ const websiteJsonLd = {
       buttonText={settings.promo_modal_button_text}
       buttonUrl={settings.promo_modal_button_url}
     />
+
+    <AdminAccessLink />
 
     <script>
       const btn = document.getElementById('mobile-menu-btn');

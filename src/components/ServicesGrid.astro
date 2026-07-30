@@ -7,10 +7,10 @@ interface Props {
 }
 const { services } = Astro.props;
 
-const categoryLabel: Record<string, string> = {
-  consultoria: 'Asesoría B2B',
-  curso: 'Formación',
-  bodega: 'Logística',
+const categoryMeta: Record<string, { label: string; icon: string }> = {
+  consultoria: { label: 'Asesoría B2B', icon: '🤝' },
+  curso: { label: 'Formación', icon: '🎓' },
+  bodega: { label: 'Logística', icon: '📦' },
 };
 ---
 
@@ -24,34 +24,44 @@ const categoryLabel: Record<string, string> = {
     </div>
 
     <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {services.map((service) => (
-        <article class="glass-card flex flex-col overflow-hidden p-6" data-reveal>
-          {service.image_url ? (
-            <img
-              src={service.image_url}
-              alt={service.title}
-              width="480"
-              height="360"
-              loading="lazy"
-              class="mb-5 aspect-[4/3] w-full rounded-xl object-cover"
-            />
-          ) : (
-            <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" class="mb-5" />
-          )}
-
-          <span class="mb-2 w-fit rounded-full border border-[var(--color-border)] px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--color-gold)]">
-            {categoryLabel[service.category] ?? service.category}
-          </span>
-          <h3 class="text-lg font-bold">{service.title}</h3>
-          <p class="mt-2 flex-1 text-sm text-[var(--color-text-muted)]">{service.description}</p>
-
-          {service.cta_url && (
-            <a href={service.cta_url} target="_blank" rel="noopener" class="btn-ghost mt-5 w-fit !py-2 !px-4 text-sm">
-              {service.cta_text}
+      {services.map((service) => {
+        const meta = categoryMeta[service.category] ?? { label: service.category, icon: '•' };
+        return (
+          <article class="card-soft flex flex-col overflow-hidden p-6" data-reveal>
+            <a href={`/servicios/${service.slug}`}>
+              {service.image_url ? (
+                <img
+                  src={service.image_url}
+                  alt={service.title}
+                  width="480"
+                  height="360"
+                  loading="lazy"
+                  class="mb-5 aspect-[4/3] w-full rounded-xl object-cover"
+                />
+              ) : (
+                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" class="mb-5" />
+              )}
             </a>
-          )}
-        </article>
-      ))}
+
+            <span class="tag-pill mb-2 flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider">
+              <span aria-hidden="true">{meta.icon}</span> {meta.label}
+            </span>
+            <h3 class="text-lg font-bold">
+              <a href={`/servicios/${service.slug}`} class="hover:text-[var(--color-teal)]">{service.title}</a>
+            </h3>
+            <p class="mt-2 flex-1 text-sm text-[var(--color-text-muted)]">{service.description}</p>
+
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a href={`/servicios/${service.slug}`} class="btn-ghost !py-2 !px-4 text-sm">Ver más</a>
+              {service.cta_url && (
+                <a href={service.cta_url} target="_blank" rel="noopener" class="btn-gold !py-2 !px-4 text-sm">
+                  {service.cta_text}
+                </a>
+              )}
+            </div>
+          </article>
+        );
+      })}
     </div>
   </div>
 </section>

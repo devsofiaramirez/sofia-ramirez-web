@@ -20,8 +20,8 @@ const { testimonials } = Astro.props;
 
       <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {testimonials.map((t) => (
-          <figure class="glass-card flex flex-col gap-4 p-6" data-reveal>
-            <div class="text-[var(--color-gold)]" aria-hidden="true">
+          <figure class="card-soft flex flex-col gap-4 p-6" data-reveal>
+            <div class="text-[var(--color-star)]" aria-hidden="true">
               {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
             </div>
             <blockquote class="flex-1 text-sm text-[var(--color-text-muted)]">

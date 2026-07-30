@@ -6,6 +6,7 @@ export const prerender = false;
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
+import GlobalRoutes from '@/components/GlobalRoutes.astro';
 import ServicesGrid from '@/components/ServicesGrid.astro';
 import Testimonials from '@/components/Testimonials.astro';
 import { getSiteSettings, getActiveServices, getActiveTestimonials } from '@/lib/db';
@@ -30,6 +31,7 @@ const [settings, services, testimonials] = await Promise.all([
     whatsappNumber={settings.whatsapp_number}
     whatsappMessage={settings.whatsapp_message}
   />
+  <GlobalRoutes />
   <ServicesGrid services={services} />
   <Testimonials testimonials={testimonials} />
 </BaseLayout>
