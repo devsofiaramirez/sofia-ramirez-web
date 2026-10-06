@@ -11,7 +11,10 @@ interface Props {
 }
 
 const SITE_NAME = 'Sofía Ramírez — Importaciones & Consultoría';
-const DEFAULT_OG_IMAGE = '/og-default.jpg'; // placeholder hasta tener la foto real 1200x630
+// Imagen por defecto al compartir (1200x630). Se cambia desde Panel → Configuración → "Imagen al
+// compartir el enlace"; este archivo es solo el respaldo. Si se reemplaza el archivo, subir el ?v=
+// para que WhatsApp/Facebook no sigan mostrando la versión vieja que tienen en caché.
+const DEFAULT_OG_IMAGE = '/og-default.jpg?v=2';
 
 const {
   title,

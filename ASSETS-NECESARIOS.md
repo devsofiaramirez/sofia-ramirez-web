@@ -94,9 +94,14 @@ partially visible, shipping containers visible through an open loading dock door
 
 ### 6. Imagen para compartir (la que sale al pegar el enlace en WhatsApp)
 
-- **Archivo:** `public/og-default.jpg` (1200 × 630, JPEG). Esta va en el código: pásamela y la cambio.
-- **Contenido:** también en Canva: fondo azul marino, "Sofía Ramírez · Importaciones China–Colombia" en
-  blanco con "Importaciones" en ámbar, foto de Sofía a la derecha. La actual es la versión caricatura.
+- **Dónde se cambia:** Panel → Configuración → **"Imagen al compartir el enlace"**. Se sube y listo, sin
+  tocar código. Si se deja vacía, se usa el respaldo `public/og-default.jpg?v=2` (en el código).
+- **Formato:** JPG horizontal de 1200 × 630 px (Canva tiene la plantilla "Imagen para Facebook / Open
+  Graph" de ese tamaño). La foto sola en vertical no sirve: WhatsApp la recorta o la muestra pequeña.
+- **Actual (octubre 2026):** fondo azul marino, foto de Sofía en la oficina a la derecha y "Tu aliada en
+  importaciones y logística" con "importaciones" en ámbar. Fuente: `public/images/hero/Sin título-1.jpg`.
+- **Caché:** WhatsApp guarda la imagen vieja de cada enlace. Al cambiarla, en chats donde ya se compartió
+  puede tardar días en actualizarse; en enlaces nuevos sale de una vez.
 
 ### 7. Testimonios
 

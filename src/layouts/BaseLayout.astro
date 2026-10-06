@@ -96,7 +96,9 @@ const waIcon = '<path d="M19.1 4.9A9.9 9.9 0 0 0 3.6 16.8L2.2 22l5.3-1.4a9.9 9.9
       }
     </script>
 
-    <SEO title={title} description={description} image={image} noindex={noindex} jsonLd={[orgJsonLd, websiteJsonLd]} />
+    <!-- Imagen al compartir: la de la página si la trae, si no la del panel (Configuración → Imagen al
+         compartir el enlace), y si tampoco hay, public/og-default.jpg. -->
+    <SEO title={title} description={description} image={image || settings.share_image_url || undefined} noindex={noindex} jsonLd={[orgJsonLd, websiteJsonLd]} />
 
     <!-- Transiciones entre páginas: la navegación interna no recarga, se funde (y las fotos de servicio "viajan"). -->
     <ClientRouter fallback="swap" />

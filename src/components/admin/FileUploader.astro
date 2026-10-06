@@ -7,8 +7,10 @@ interface Props {
   hint: string;
   currentValue?: string | null;
   isVideo?: boolean;
+  /** false = sube el archivo tal cual (p. ej. la imagen para compartir, que WhatsApp prefiere en JPG). */
+  optimize?: boolean;
 }
-const { field, label, accept, folder, hint, currentValue, isVideo = false } = Astro.props;
+const { field, label, accept, folder, hint, currentValue, isVideo = false, optimize = true } = Astro.props;
 const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
 ---
 
@@ -42,7 +44,7 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
   </div>
 </div>
 
-<script define:vars={{ uid, folder }} is:inline>
+<script define:vars={{ uid, folder, optimize }} is:inline>
   (function () {
     const fileInput = document.getElementById(`file_${uid}`);
     const urlInput = document.getElementById(`url_${uid}`);
@@ -62,7 +64,7 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
     // Si algo falla o el resultado no es más liviano, se sube la original.
     const MAX_SIDE = 1800;
     async function optimizeImage(file) {
-      if (!/^image\/(jpeg|jpg|png|webp)$/.test(file.type)) return file;
+      if (!optimize || !/^image\/(jpeg|jpg|png|webp)$/.test(file.type)) return file;
       try {
         const bitmap = await createImageBitmap(file);
         const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));

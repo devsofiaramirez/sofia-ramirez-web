@@ -19,6 +19,7 @@ if (Astro.request.method === 'POST') {
     'contact_email',
     'promo_modal_image', 'promo_modal_video_url', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
     'promo_modal_trigger',
+    'share_image_url',
     'quote_title', 'quote_subtitle',
     'quote_q1_label', 'quote_q1_options', 'quote_q2_label', 'quote_q2_options', 'quote_q3_label', 'quote_q3_options',
     'quote_button_text', 'quote_message_intro',
@@ -113,6 +114,25 @@ const inputClass = 'w-full rounded-lg border border-[var(--color-border)] bg-[va
           <label class="mb-1 block text-sm font-semibold" for="social_linkedin">LinkedIn</label>
           <input id="social_linkedin" name="social_linkedin" placeholder="https://linkedin.com/in/tu_perfil" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
+      </div>
+    </section>
+
+    <section id="compartir" class="glass-card p-6">
+      <h2 class="font-bold">Imagen al compartir el enlace</h2>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+        Es la imagen que aparece cuando alguien pega el enlace de tu página en WhatsApp, Facebook o LinkedIn.
+        Si la dejas vacía, se usa la imagen que viene con la página.
+      </p>
+      <div class="mt-4">
+        <FileUploader
+          field="share_image_url"
+          label="Imagen para compartir"
+          accept="image/jpeg,image/png"
+          folder="compartir"
+          hint="JPG horizontal de 1200 × 630 px (hazla en Canva con ese tamaño). Ojo: WhatsApp guarda la imagen vieja un tiempo; la nueva puede tardar unos días en verse en chats donde ya se compartió."
+          currentValue={settings.share_image_url}
+          optimize={false}
+        />
       </div>
     </section>
 
