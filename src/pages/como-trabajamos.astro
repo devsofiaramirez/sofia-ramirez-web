@@ -1,0 +1,26 @@
+---
+// /como-trabajamos: el recorrido de una importación + lo que cubre Sofía.
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import ImportJourney from '@/components/ImportJourney.astro';
+import { getSiteSettings } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const settings = await getSiteSettings(db);
+---
+
+<BaseLayout
+  title="Cómo trabajamos: de China a tu bodega"
+  description="Así es una importación con Sofía Ramírez: cotización y plan, compra y control en China, transporte y trámites, y entrega en Cúcuta."
+  settings={settings}
+  darkTop
+>
+  <PageHero
+    eyebrow="Cómo trabajamos"
+    title="De China a tu bodega, *paso a paso*"
+    subtitle="Una sola persona responsable de tu carga de principio a fin: sabes en qué va tu mercancía y a quién preguntarle."
+    crumbs={[{ label: 'Inicio', href: '/' }, { label: 'Cómo trabajamos' }]}
+  />
+  <ImportJourney showHeading={false} />
+</BaseLayout>

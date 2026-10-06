@@ -1,46 +1,147 @@
 ---
 import type { Testimonial } from '@/lib/db';
-import PlaceholderImage from '@/components/PlaceholderImage.astro';
 
 interface Props {
   testimonials: Testimonial[];
+  /** 'carousel' en el inicio; 'grid' en /testimonios (todos a la vista). */
+  layout?: 'carousel' | 'grid';
+  showHeading?: boolean;
+  moreLink?: { href: string; label: string };
 }
-const { testimonials } = Astro.props;
+const { testimonials, layout = 'carousel', showHeading = true, moreLink } = Astro.props;
+const isCarousel = layout === 'carousel';
+
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || '★';
 ---
 
 {testimonials.length > 0 && (
-  <section id="testimonios" class="section-padding border-t border-[var(--color-border)]">
-    <div class="container">
-      <div class="max-w-2xl" data-reveal>
-        <p class="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-gold)]">
-          Confianza
-        </p>
-        <h2 class="h2-display font-bold">Empresas y comerciantes que ya importan con Sofía</h2>
+  <section id="testimonios" class="scope-dark section-padding relative overflow-hidden">
+    <div class="aurora" style="width:36rem;height:36rem;top:-12rem;left:-10rem;background:#2c5282;opacity:.45" aria-hidden="true"></div>
+    <div class="aurora" style="width:24rem;height:24rem;bottom:-10rem;right:-6rem;background:#f59e0b;opacity:.18;animation-delay:-8s" aria-hidden="true"></div>
+
+    <div class="container relative">
+      <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        {showHeading && (
+          <div class="max-w-2xl" data-reveal>
+            <p class="eyebrow">Confianza</p>
+            <h2 class="h2-display font-extrabold">Empresas y comerciantes que ya importan <span class="highlight">con Sofía</span></h2>
+          </div>
+        )}
+        {isCarousel && <div class="carousel-controls hidden gap-3" data-reveal>
+          <button type="button" class="carousel-prev flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-border)] transition-all hover:border-[var(--color-accent)] hover:bg-white/5 disabled:opacity-30" aria-label="Testimonio anterior">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          </button>
+          <button type="button" class="carousel-next flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent)] text-[var(--color-ink)] transition-transform hover:scale-105 disabled:opacity-30" aria-label="Siguiente testimonio">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>}
       </div>
 
-      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        class:list={[
+          isCarousel ? 'carousel -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-4 sm:-mx-0 sm:px-0' : 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3',
+          showHeading ? 'mt-12' : 'mt-0',
+        ]}
+        tabindex={isCarousel ? '0' : undefined}
+        aria-label={isCarousel ? 'Testimonios (desliza para ver más)' : undefined}
+        data-reveal
+      >
         {testimonials.map((t) => (
-          <figure class="card-soft flex flex-col gap-4 p-6" data-reveal>
-            <div class="text-[var(--color-star)]" aria-hidden="true">
-              {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+          <figure class:list={['flex flex-col rounded-3xl border border-[var(--color-border)] bg-white/[0.04] p-7 backdrop-blur-sm transition-colors hover:border-[var(--color-accent)]/50', { 'w-[86%] shrink-0 sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)]': isCarousel }]}>
+            <svg class="h-9 w-9 text-[var(--color-accent)]" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M9.3 26C5.6 26 3 23.1 3 19.4 3 12 8.6 6.6 14 6l.7 2.6c-3.6 1.2-6 4-6.2 7 .5-.2 1.1-.3 1.8-.3 3.2 0 5.6 2.4 5.6 5.4 0 3-2.7 5.3-6.6 5.3zm14.6 0c-3.7 0-6.3-2.9-6.3-6.6 0-7.4 5.6-12.8 11-13.4l.7 2.6c-3.6 1.2-6 4-6.2 7 .5-.2 1.1-.3 1.8-.3 3.2 0 5.6 2.4 5.6 5.4 0 3-2.7 5.3-6.6 5.3z"/></svg>
+            <div class="mt-4 text-[var(--color-star)]" aria-label={`${t.rating} de 5 estrellas`}>
+              {'★'.repeat(t.rating)}<span class="opacity-30">{'★'.repeat(5 - t.rating)}</span>
             </div>
-            <blockquote class="flex-1 text-sm text-[var(--color-text-muted)]">
-              “{t.quote}”
-            </blockquote>
-            <figcaption class="flex items-center gap-3">
+            <blockquote class="mt-3 flex-1 leading-relaxed text-[var(--color-text)]/90">{t.quote}</blockquote>
+            <figcaption class="mt-6 flex items-center gap-3 border-t border-[var(--color-border)] pt-5">
               {t.photo_url ? (
-                <img src={t.photo_url} alt={t.author_name} width="40" height="40" loading="lazy" class="h-10 w-10 rounded-full object-cover" />
+                <img src={t.photo_url} alt="" width="44" height="44" loading="lazy" decoding="async" class="h-11 w-11 rounded-full bg-white object-contain p-0.5" />
               ) : (
-                <PlaceholderImage label="Foto" aspect="1/1" class="h-10 w-10 !p-0 !text-[0.5rem] rounded-full" />
+                <span class="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-accent)] text-sm font-extrabold text-[var(--color-ink)]" aria-hidden="true">{initials(t.author_name)}</span>
               )}
               <div>
-                <p class="text-sm font-semibold">{t.author_name}</p>
-                {t.author_role && <p class="text-xs text-[var(--color-text-muted)]">{t.author_role}</p>}
+                <p class="font-semibold">{t.author_name}</p>
+                {t.author_role && <p class="text-sm text-[var(--color-text-muted)]">{t.author_role}</p>}
               </div>
             </figcaption>
           </figure>
         ))}
       </div>
+
+      {isCarousel && <div class="carousel-dots mt-6 flex justify-center gap-2" aria-hidden="true"></div>}
+
+      {moreLink && (
+        <div class="mt-10 flex justify-center" data-reveal>
+          <a href={moreLink.href} class="btn-ghost">
+            {moreLink.label}
+            <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      )}
     </div>
   </section>
 )}
+
+<script>
+  import { onPageLoad } from '@/scripts/motion';
+
+  onPageLoad(() => {
+    const section = document.getElementById('testimonios');
+    const track = section?.querySelector<HTMLElement>('.carousel');
+    if (!section || !track) return;
+    const items = [...track.children] as HTMLElement[];
+    const prev = section.querySelector<HTMLButtonElement>('.carousel-prev')!;
+    const next = section.querySelector<HTMLButtonElement>('.carousel-next')!;
+    const controls = section.querySelector<HTMLElement>('.carousel-controls')!;
+    const dotsBox = section.querySelector<HTMLElement>('.carousel-dots')!;
+
+    const step = () => (items[1] ? items[1].offsetLeft - items[0].offsetLeft : track.clientWidth);
+    const pages = () => Math.max(1, Math.ceil((track.scrollWidth - track.clientWidth) / step() - 0.05) + 1);
+
+    const render = () => {
+      const scrollable = track.scrollWidth - track.clientWidth > 8;
+      controls.classList.toggle('hidden', !scrollable);
+      controls.classList.toggle('flex', scrollable);
+      const n = scrollable ? pages() : 0;
+      if (dotsBox.childElementCount !== n) {
+        dotsBox.innerHTML = Array.from({ length: n }, () => '<span class="carousel-dot block h-2 w-2 rounded-full bg-white/25"></span>').join('');
+      }
+      const current = Math.round(track.scrollLeft / step());
+      [...dotsBox.children].forEach((d, i) => d.setAttribute('aria-current', String(i === Math.min(current, n - 1))));
+      prev.disabled = track.scrollLeft < 8;
+      next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 8;
+    };
+
+    prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+    track.addEventListener('scroll', () => requestAnimationFrame(render), { passive: true });
+    // Oyentes de window atados a esta página: se sueltan al navegar a otra.
+    const ac = new AbortController();
+    document.addEventListener('astro:before-swap', () => ac.abort(), { once: true });
+    window.addEventListener('resize', render, { signal: ac.signal });
+    render();
+
+    // Arrastrar con el mouse (en celular ya se desliza con el dedo de forma nativa).
+    let startX = 0;
+    let startScroll = 0;
+    let dragging = false;
+    track.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      dragging = true;
+      startX = e.clientX;
+      startScroll = track.scrollLeft;
+      track.style.scrollSnapType = 'none';
+      track.style.cursor = 'grabbing';
+    });
+    window.addEventListener('pointermove', (e) => dragging && (track.scrollLeft = startScroll - (e.clientX - startX)), { signal: ac.signal });
+    window.addEventListener('pointerup', () => {
+      if (!dragging) return;
+      dragging = false;
+      track.style.cursor = '';
+      const target = Math.round(track.scrollLeft / step()) * step();
+      track.scrollTo({ left: target, behavior: 'smooth' });
+      setTimeout(() => (track.style.scrollSnapType = ''), 450);
+    }, { signal: ac.signal });
+  });
+</script>

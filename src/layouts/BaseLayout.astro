@@ -1,31 +1,62 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import SEO from '@/components/SEO.astro';
 import BrandLogo from '@/components/BrandLogo.astro';
 import PromoModal from '@/components/PromoModal.astro';
-import AdminAccessLink from '@/components/AdminAccessLink.astro';
 import '@/styles/global.css';
 import { buildWhatsappUrl } from '@/lib/utils';
+import { getQuoteConfig } from '@/lib/quote';
+// Fuentes servidas desde el propio sitio (antes Google Fonts): se precargan y llegan antes de pintar,
+// así el título no "salta" al cambiar de la letra de respaldo a la definitiva. Solo el subconjunto
+// latino, que incluye tildes, ñ, ¿ y ¡.
+import manropeUrl from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import interUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
   description: string;
   image?: string;
   settings: Record<string, string>;
+  /** La página arranca con una sección oscura (el encabezado se pinta claro mientras esté arriba). */
+  darkTop?: boolean;
+  noindex?: boolean;
 }
 
-const { title, description, image, settings } = Astro.props;
+const { title, description, image, settings, darkTop = false, noindex = false } = Astro.props;
 
 const whatsappUrl = buildWhatsappUrl(
   settings.whatsapp_number ?? '573000000000',
   settings.whatsapp_message ?? 'Hola Sofía, quiero más información.'
 );
+const quoteEnabled = getQuoteConfig(settings).enabled;
+
+// Cada opción del menú es una página propia (URL limpia, sin "#"), mejor para Google y para compartir.
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const navLinks = [
+  { href: '/servicios', label: 'Servicios' },
+  { href: '/cursos', label: 'Cursos' },
+  { href: '/como-trabajamos', label: 'Cómo trabajamos' },
+  { href: '/testimonios', label: 'Testimonios' },
+  ...(quoteEnabled ? [{ href: '/cotizar', label: 'Cotizar' }] : []),
+].map((l) => ({ ...l, current: path === l.href || (l.href === '/servicios' && path.startsWith('/servicios/')) }));
+
+const socials = [
+  { url: settings.social_instagram, label: 'Instagram', icon: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/>' },
+  { url: settings.social_facebook, label: 'Facebook', icon: '<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z"/>' },
+  { url: settings.social_tiktok, label: 'TikTok', icon: '<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 2.8 2.4 4.5 5 4.8"/>' },
+  { url: settings.social_linkedin, label: 'LinkedIn', icon: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7"/>' },
+].filter((s) => s.url);
 
 const orgJsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
+  '@type': 'ProfessionalService',
   name: 'Sofía Ramírez — Importaciones & Consultoría',
   url: Astro.site?.toString(),
-  sameAs: [settings.social_instagram, settings.social_facebook, settings.social_tiktok, settings.social_linkedin].filter(Boolean),
+  image: new URL('/og-default.jpg', Astro.site).toString(),
+  areaServed: ['CO', 'CN'],
+  address: { '@type': 'PostalAddress', addressLocality: 'Cúcuta', addressRegion: 'Norte de Santander', addressCountry: 'CO' },
+  ...(settings.contact_email ? { email: settings.contact_email } : {}),
+  sameAs: socials.map((s) => s.url),
 };
 
 const websiteJsonLd = {
@@ -33,116 +64,190 @@ const websiteJsonLd = {
   '@type': 'WebSite',
   name: 'Sofía Ramírez',
   url: Astro.site?.toString(),
+  inLanguage: 'es-CO',
 };
+
+const waIcon = '<path d="M19.1 4.9A9.9 9.9 0 0 0 3.6 16.8L2.2 22l5.3-1.4a9.9 9.9 0 0 0 4.7 1.2 9.9 9.9 0 0 0 7-16.9zM12.2 20.1a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3a8.2 8.2 0 1 1 7 3.9zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.4-.2z" fill="currentColor"/>';
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1a30" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Fuentes: preload + swap para no bloquear el render (SEO 1.11 / lección #6) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      id="font-preload"
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
-      />
-    </noscript>
+    <!-- Fuentes propias precargadas (ver import arriba). Sin truco de JS: con las transiciones entre
+         páginas (ClientRouter) ese truco hacía que la tipografía se perdiera al navegar. -->
+    <link rel="preload" href={manropeUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interUrl} as="font" type="font/woff2" crossorigin />
+    <style is:inline set:html={`
+      @font-face { font-family: 'Manrope'; font-style: normal; font-weight: 200 800; font-display: swap; src: url(${manropeUrl}) format('woff2'); }
+      @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; src: url(${interUrl}) format('woff2'); }
+    `}></style>
+
+    <!-- Marca que habrá animación de entrada (evita el parpadeo del hero). Si el JS no llega en 3 s, se muestra todo igual. -->
     <script is:inline>
-      const fontLink = document.getElementById('font-preload');
-      if (fontLink) {
-        fontLink.onload = function () {
-          fontLink.onload = null;
-          fontLink.rel = 'stylesheet';
-        };
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('js-motion');
+        setTimeout(function () { document.documentElement.classList.remove('js-motion'); }, 3000);
       }
     </script>
 
-    <SEO title={title} description={description} image={image} jsonLd={[orgJsonLd, websiteJsonLd]} />
+    <SEO title={title} description={description} image={image} noindex={noindex} jsonLd={[orgJsonLd, websiteJsonLd]} />
+
+    <!-- Transiciones entre páginas: la navegación interna no recarga, se funde (y las fotos de servicio "viajan"). -->
+    <ClientRouter fallback="swap" />
   </head>
   <body>
-    <header class="fixed top-0 inset-x-0 z-50 border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-bg)_85%,transparent)] backdrop-blur-md" style="padding-top: env(safe-area-inset-top);">
-      <div class="container flex items-center justify-between py-4">
-        <a href="/" aria-label="Inicio">
+    <div class="scroll-progress" aria-hidden="true" transition:persist="scroll-progress"></div>
+
+    <header
+      id="site-header"
+      class="site-header fixed top-0 inset-x-0 z-50 border-b border-[var(--color-border)]"
+      data-state="top"
+      data-over-dark={darkTop ? 'true' : 'false'}
+      style="padding-top: env(safe-area-inset-top);"
+    >
+      <div class="header-row container flex items-center justify-between py-5">
+        <a href="/" aria-label="Sofía Ramírez, inicio" class="relative">
           <BrandLogo variant="compact" />
         </a>
 
-        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-[var(--color-text-muted)]">
-          <a href="/#servicios" class="hover:text-[var(--color-teal)] transition-colors">Servicios</a>
-          <a href="/#cursos" class="hover:text-[var(--color-teal)] transition-colors">Cursos</a>
-          <a href="/#testimonios" class="hover:text-[var(--color-teal)] transition-colors">Testimonios</a>
-          <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold !py-2.5 !px-5 text-sm">Escríbenos</a>
+        <nav class="hidden lg:flex items-center gap-8 text-sm font-medium" aria-label="Principal">
+          {navLinks.map((l) => (
+            <a href={l.href} class="nav-link" aria-current={l.current ? 'page' : undefined}>{l.label}</a>
+          ))}
+          <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-accent !py-2.5 !px-5 text-sm">
+            Escríbenos
+            <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
         </nav>
 
         <button
           id="mobile-menu-btn"
-          class="md:hidden flex flex-col gap-1.5 p-2 z-50"
+          class="burger lg:hidden relative flex flex-col gap-[5px] p-3 -mr-3"
           aria-label="Abrir menú"
           aria-expanded="false"
           aria-controls="mobile-menu"
         >
-          <span class="block h-0.5 w-6 bg-[var(--color-text)]"></span>
-          <span class="block h-0.5 w-6 bg-[var(--color-text)]"></span>
-          <span class="block h-0.5 w-6 bg-[var(--color-text)]"></span>
+          <span></span><span></span><span></span>
         </button>
       </div>
-
-      <nav
-        id="mobile-menu"
-        class="md:hidden hidden flex-col gap-6 px-6 py-8 text-lg font-medium border-t border-[var(--color-border)] bg-[var(--color-bg)] max-h-[calc(100dvh-72px)] overflow-y-auto"
-      >
-        <a href="/#servicios" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Servicios</a>
-        <a href="/#cursos" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Cursos</a>
-        <a href="/#testimonios" class="text-[var(--color-text-muted)] hover:text-[var(--color-teal)]">Testimonios</a>
-        <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold w-fit">Escríbenos por WhatsApp</a>
-      </nav>
     </header>
 
-    <main>
+    <!-- Menú móvil a pantalla completa (fuera del header para que el header pueda esconderse sin llevárselo). -->
+    <div id="mobile-menu" class="mobile-menu scope-dark fixed inset-0 z-[45] flex flex-col overflow-y-auto lg:hidden" data-open="false">
+      <div class="aurora" style="width:60vw;height:60vw;top:-10%;right:-20%;background:#f59e0b;opacity:.22" aria-hidden="true"></div>
+      <div class="aurora" style="width:70vw;height:70vw;bottom:-20%;left:-30%;background:#2c5282;opacity:.5" aria-hidden="true"></div>
+      <nav class="container relative flex flex-1 flex-col justify-center gap-2 pt-28 pb-10" aria-label="Menú móvil">
+        {navLinks.map((l, i) => (
+          <a href={l.href} aria-current={l.current ? 'page' : undefined} class:list={['menu-item flex items-baseline gap-4 border-b border-[var(--color-border)] py-4 font-[family-name:var(--font-display)] text-3xl font-bold', { 'text-[var(--color-accent-text)]': l.current }]} style={`--i:${i}`}>
+            <span class="text-xs font-semibold text-[var(--color-accent-text)]">0{i + 1}</span>
+            {l.label}
+          </a>
+        ))}
+        <a href={whatsappUrl} target="_blank" rel="noopener" class="menu-item btn-accent mt-8 w-full" style={`--i:${navLinks.length}`}>
+          <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true" set:html={waIcon} />
+          Escríbenos por WhatsApp
+        </a>
+        {socials.length > 0 && (
+          <div class="menu-item mt-6 flex gap-3" style={`--i:${navLinks.length + 1}`}>
+            {socials.map((s) => (
+              <a href={s.url} target="_blank" rel="noopener" aria-label={s.label} class="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)]">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={s.icon} />
+              </a>
+            ))}
+          </div>
+        )}
+      </nav>
+    </div>
+
+    <main id="contenido">
       <slot />
     </main>
 
-    <footer class="footer-scope section-padding border-t border-[var(--color-border)]" style="padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));">
-      <div class="container grid gap-10 md:grid-cols-3">
+    <footer id="site-footer" class="scope-dark relative overflow-hidden" style="padding-bottom: env(safe-area-inset-bottom);">
+      <div class="aurora" style="width:40rem;height:40rem;top:-60%;right:-10%;background:#2c5282;opacity:.35" aria-hidden="true"></div>
+
+      <!-- Llamado final antes del pie -->
+      <div class="container relative border-b border-[var(--color-border)] py-16 md:py-20">
+        <div class="flex flex-col items-start gap-8 md:flex-row md:items-end md:justify-between" data-reveal>
+          <div class="max-w-2xl">
+            <p class="eyebrow">Hablemos</p>
+            <p class="h2-display font-[family-name:var(--font-display)] font-extrabold">¿Listo para traer tu mercancía <span class="highlight">sin sorpresas</span>?</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            {quoteEnabled && <a href="/cotizar" class="btn-ghost">Cotizar ahora</a>}
+            <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-accent">
+              Hablar con Sofía
+              <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="container relative grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <BrandLogo variant="full" />
-          <p class="mt-4 text-sm text-[var(--color-text-muted)] max-w-xs">
-            Asesoría, formación y logística de importaciones desde China hasta Cúcuta.
+          <p class="mt-4 max-w-xs text-sm text-[var(--color-text-muted)]">
+            Asesoría, formación y logística de importaciones desde China hasta Colombia, con bodega propia en Cúcuta.
           </p>
         </div>
 
-        <div class="text-sm text-[var(--color-text-muted)]">
-          <p class="text-[var(--color-text)] font-semibold mb-3">Contacto</p>
-          <p><a href={whatsappUrl} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">WhatsApp</a></p>
-          {settings.contact_email && <p><a href={`mailto:${settings.contact_email}`} class="hover:text-[var(--color-teal)]">{settings.contact_email}</a></p>}
-        </div>
-
-        <div class="text-sm text-[var(--color-text-muted)]">
-          <p class="text-[var(--color-text)] font-semibold mb-3">Redes</p>
-          <ul class="space-y-2">
-            {settings.social_instagram && <li><a href={settings.social_instagram} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">Instagram</a></li>}
-            {settings.social_facebook && <li><a href={settings.social_facebook} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">Facebook</a></li>}
-            {settings.social_tiktok && <li><a href={settings.social_tiktok} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">TikTok</a></li>}
-            {settings.social_linkedin && <li><a href={settings.social_linkedin} target="_blank" rel="noopener" class="hover:text-[var(--color-teal)]">LinkedIn</a></li>}
+        <div class="text-sm">
+          <p class="mb-4 font-semibold">Explora</p>
+          <ul class="space-y-2.5 text-[var(--color-text-muted)]">
+            {navLinks.map((l) => (
+              <li><a href={l.href} class="transition-colors hover:text-[var(--color-accent-text)]">{l.label}</a></li>
+            ))}
           </ul>
         </div>
+
+        <div class="text-sm">
+          <p class="mb-4 font-semibold">Contacto</p>
+          <ul class="space-y-2.5 text-[var(--color-text-muted)]">
+            <li><a href={whatsappUrl} target="_blank" rel="noopener" class="transition-colors hover:text-[var(--color-accent-text)]">WhatsApp</a></li>
+            {settings.contact_email && <li><a href={`mailto:${settings.contact_email}`} class="break-all transition-colors hover:text-[var(--color-accent-text)]">{settings.contact_email}</a></li>}
+            <li>Cúcuta, Norte de Santander, Colombia</li>
+          </ul>
+        </div>
+
+        {socials.length > 0 && (
+          <div class="text-sm">
+            <p class="mb-4 font-semibold">Redes</p>
+            <div class="flex flex-wrap gap-3">
+              {socials.map((s) => (
+                <a href={s.url} target="_blank" rel="noopener" aria-label={s.label} class="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition-all hover:-translate-y-1 hover:border-[var(--color-accent)] hover:text-[var(--color-accent-text)]">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={s.icon} />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div class="container mt-10 pt-6 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
-        © {new Date().getFullYear()} Sofía Ramírez. Todos los derechos reservados.
+      <div class="container relative flex flex-col gap-2 border-t border-[var(--color-border)] py-6 text-xs text-[var(--color-text-muted)] sm:flex-row sm:justify-between">
+        <p>© {new Date().getFullYear()} Sofía Ramírez. Todos los derechos reservados.</p>
+        <a href="/admin/login" data-astro-reload class="opacity-60 transition-opacity hover:opacity-100">Acceso administrador</a>
       </div>
     </footer>
+
+    <!-- Botón flotante de WhatsApp: se esconde al llegar al pie (allí ya está el llamado grande). -->
+    <a
+      id="wa-float"
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener"
+      aria-label="Escribir a Sofía por WhatsApp"
+      class="wa-float fixed z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_12px_30px_-8px_rgba(37,211,102,0.7)]"
+      style="right: max(1.25rem, env(safe-area-inset-right)); bottom: max(1.25rem, env(safe-area-inset-bottom));"
+      transition:persist="wa-float"
+    >
+      <svg class="h-7 w-7" viewBox="0 0 24 24" aria-hidden="true" set:html={waIcon} />
+    </a>
 
     <PromoModal
       enabled={settings.promo_modal_enabled === '1'}
@@ -151,36 +256,11 @@ const websiteJsonLd = {
       text={settings.promo_modal_text}
       buttonText={settings.promo_modal_button_text}
       buttonUrl={settings.promo_modal_button_url}
+      trigger={settings.promo_modal_trigger}
     />
 
-    <AdminAccessLink />
-
     <script>
-      const btn = document.getElementById('mobile-menu-btn');
-      const menu = document.getElementById('mobile-menu');
-      btn?.addEventListener('click', () => {
-        const isOpen = menu?.classList.toggle('hidden') === false;
-        menu?.classList.toggle('flex', isOpen);
-        btn.setAttribute('aria-expanded', String(isOpen));
-      });
-
-      // Animación de entrada al hacer scroll: un solo observer para todo [data-reveal].
-      const revealEls = document.querySelectorAll<HTMLElement>('[data-reveal]');
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            }
-          }
-        },
-        { threshold: 0.15 }
-      );
-      revealEls.forEach((el) => {
-        el.classList.add('reveal');
-        observer.observe(el);
-      });
+      import '@/scripts/site';
     </script>
   </body>
 </html>

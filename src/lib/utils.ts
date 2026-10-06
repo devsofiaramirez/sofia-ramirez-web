@@ -4,6 +4,30 @@ export function buildWhatsappUrl(number: string, message: string): string {
   return `https://wa.me/${digits}${params}`;
 }
 
+/**
+ * Parte un título en palabras para animarlas una por una. Lo que se escriba entre *asteriscos*
+ * en el panel sale resaltado (ej. "Tu aliada en *importaciones*").
+ */
+export function splitTitle(title: string): { word: string; highlight: boolean }[] {
+  const out: { word: string; highlight: boolean }[] = [];
+  title.split(/(\*[^*]+\*)/).forEach((chunk) => {
+    const highlight = chunk.startsWith('*') && chunk.endsWith('*') && chunk.length > 2;
+    const text = highlight ? chunk.slice(1, -1) : chunk;
+    text.split(/\s+/).filter(Boolean).forEach((word) => out.push({ word, highlight }));
+  });
+  return out;
+}
+
+/** El mismo título sin los asteriscos, para <title>, descripciones y lectores de pantalla. */
+export function plainTitle(title: string): string {
+  return title.replace(/\*/g, '');
+}
+
+/** Opciones escritas una por línea en el panel → lista limpia. */
+export function linesToOptions(value: string | undefined): string[] {
+  return (value ?? '').split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 12);
+}
+
 export function sanitizeFolderName(input: string): string {
   return input.replace(/[^a-z0-9-_]/gi, '').toLowerCase() || 'misc';
 }

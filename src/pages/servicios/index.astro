@@ -1,0 +1,38 @@
+---
+// /servicios: el portafolio completo, con filtro por categoría.
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import ServicesGrid from '@/components/ServicesGrid.astro';
+import { getSiteSettings, getActiveServices } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const [settings, services] = await Promise.all([getSiteSettings(db), getActiveServices(db)]);
+
+const listJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: services.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: new URL(`/servicios/${s.slug}`, Astro.site).toString(),
+    name: s.title,
+  })),
+};
+---
+
+<BaseLayout
+  title="Servicios de importación China–Colombia"
+  description="Asesoría a empresas, cursos de importación y gestión de bodega y logística desde China hasta Cúcuta. Conoce todos los servicios de Sofía Ramírez."
+  settings={settings}
+  darkTop
+>
+  <script type="application/ld+json" set:html={JSON.stringify(listJsonLd)} is:inline />
+  <PageHero
+    eyebrow="Portafolio"
+    title="Servicios y *cursos*"
+    subtitle="Elige cómo quieres que te acompañemos: que lo hagamos por ti, que te enseñemos a importar o que movamos tu carga hasta Cúcuta."
+    crumbs={[{ label: 'Inicio', href: '/' }, { label: 'Servicios' }]}
+  />
+  <ServicesGrid services={services} showHeading={false} emptyText="Muy pronto publicaremos los servicios." />
+</BaseLayout>

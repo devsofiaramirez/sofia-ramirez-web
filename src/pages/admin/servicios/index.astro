@@ -42,7 +42,7 @@ const categoryLabel: Record<string, string> = {
 <AdminLayout title="Servicios y cursos">
   <div class="mb-2 flex items-center justify-between">
     <h1 class="text-2xl font-bold">Servicios y cursos</h1>
-    <a href="/admin/servicios/nuevo" class="btn-gold !py-2 !px-4 text-sm">+ Nuevo</a>
+    <a href="/admin/servicios/nuevo" class="btn-accent !py-2 !px-4 text-sm">+ Nuevo</a>
   </div>
   <p class="mb-6 text-sm text-[var(--color-text-muted)]">
     Usa las flechas para ordenarlos como quieras que aparezcan en la página — "Ocultar" los quita de la web
@@ -58,7 +58,7 @@ const categoryLabel: Record<string, string> = {
           <p class="text-xs text-[var(--color-text-muted)]">{categoryLabel[s.category] ?? s.category}</p>
         </div>
 
-        <span class={`rounded px-2 py-1 text-xs font-bold ${s.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
+        <span class={`rounded px-2 py-1 text-xs font-bold ${s.is_active ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
           {s.is_active ? 'Activo' : 'Oculto'}
         </span>
 
@@ -66,22 +66,22 @@ const categoryLabel: Record<string, string> = {
           <form method="POST">
             <input type="hidden" name="action" value="move-up" />
             <input type="hidden" name="id" value={s.id} />
-            <button type="submit" disabled={i === 0} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▲</button>
+            <button type="submit" disabled={i === 0} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-accent)] disabled:opacity-30">▲</button>
           </form>
           <form method="POST">
             <input type="hidden" name="action" value="move-down" />
             <input type="hidden" name="id" value={s.id} />
-            <button type="submit" disabled={i === services.length - 1} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▼</button>
+            <button type="submit" disabled={i === services.length - 1} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-accent)] disabled:opacity-30">▼</button>
           </form>
         </div>
 
         <form method="POST">
           <input type="hidden" name="action" value="toggle" />
           <input type="hidden" name="id" value={s.id} />
-          <button type="submit" class="text-sm text-[var(--color-gold)] hover:underline">{s.is_active ? 'Ocultar' : 'Activar'}</button>
+          <button type="submit" class="text-sm text-[var(--color-accent)] hover:underline">{s.is_active ? 'Ocultar' : 'Activar'}</button>
         </form>
 
-        <a href={`/admin/servicios/${s.id}`} class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-gold)]">Editar</a>
+        <a href={`/admin/servicios/${s.id}`} class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">Editar</a>
 
         <form method="POST" onsubmit="return confirm('¿Eliminar este servicio?')">
           <input type="hidden" name="action" value="delete" />

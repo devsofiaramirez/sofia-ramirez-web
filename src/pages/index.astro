@@ -2,14 +2,17 @@
 // SSR: el home lee site_settings/services/testimonials directo de D1 (mismo proyecto, sin API intermedia).
 // Costo: esta página ya no es 100% estática — se acepta porque D1 en el edge responde en pocos ms
 // y el HTML sigue siendo servido completo (cumple SEO 1.1: nada inyectado solo por JS de cliente).
+// El inicio muestra un resumen de cada sección; cada una tiene su página propia (/servicios, /cursos,
+// /como-trabajamos, /testimonios, /cotizar).
 export const prerender = false;
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
-import GlobalRoutes from '@/components/GlobalRoutes.astro';
+import ImportJourney from '@/components/ImportJourney.astro';
 import ServicesGrid from '@/components/ServicesGrid.astro';
 import Testimonials from '@/components/Testimonials.astro';
 import { getSiteSettings, getActiveServices, getActiveTestimonials } from '@/lib/db';
+import { getQuoteConfig } from '@/lib/quote';
 
 const db = Astro.locals.runtime.env.DB;
 const [settings, services, testimonials] = await Promise.all([
@@ -17,12 +20,14 @@ const [settings, services, testimonials] = await Promise.all([
   getActiveServices(db),
   getActiveTestimonials(db),
 ]);
+const quote = getQuoteConfig(settings);
 ---
 
 <BaseLayout
   title="Asesoría e importaciones China–Colombia"
-  description="Sofía Ramírez: asesoría B2B, cursos de importaciones y gestión de bodegas y logística entre China y Colombia."
+  description="Sofía Ramírez: asesoría B2B, cursos de importaciones y gestión de bodegas y logística entre China y Colombia, con bodega propia en Cúcuta."
   settings={settings}
+  darkTop
 >
   <Hero
     title={settings.hero_title}
@@ -31,8 +36,9 @@ const [settings, services, testimonials] = await Promise.all([
     whatsappNumber={settings.whatsapp_number}
     whatsappMessage={settings.whatsapp_message}
     avatarUrl={settings.hero_avatar_url}
+    quoteEnabled={quote.enabled}
   />
-  <GlobalRoutes />
-  <ServicesGrid services={services} />
-  <Testimonials testimonials={testimonials} />
+  <ImportJourney showCapabilities={false} moreLink={{ href: '/como-trabajamos', label: 'Conoce cómo trabajamos' }} />
+  <ServicesGrid services={services.slice(0, 6)} moreLink={{ href: '/servicios', label: 'Ver todos los servicios' }} />
+  <Testimonials testimonials={testimonials} moreLink={testimonials.length > 3 ? { href: '/testimonios', label: 'Ver todos los testimonios' } : undefined} />
 </BaseLayout>

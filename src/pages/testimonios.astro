@@ -1,0 +1,32 @@
+---
+// /testimonios: todos los testimonios activos, a la vista en rejilla.
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import { getSiteSettings, getActiveTestimonials } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const [settings, testimonials] = await Promise.all([getSiteSettings(db), getActiveTestimonials(db)]);
+---
+
+<BaseLayout
+  title="Testimonios de clientes"
+  description="Empresas y comerciantes que ya importan desde China con Sofía Ramírez cuentan cómo les fue."
+  settings={settings}
+  darkTop
+>
+  <PageHero
+    eyebrow="Confianza"
+    title="Empresas que ya importan *con Sofía*"
+    subtitle="Lo que cuentan quienes ya trajeron su mercancía desde China con nosotros."
+    crumbs={[{ label: 'Inicio', href: '/' }, { label: 'Testimonios' }]}
+  />
+  {testimonials.length > 0 ? (
+    <Testimonials testimonials={testimonials} layout="grid" showHeading={false} />
+  ) : (
+    <section class="section-padding text-center">
+      <p class="container text-[var(--color-text-muted)]">Muy pronto publicaremos los testimonios de nuestros clientes.</p>
+    </section>
+  )}
+</BaseLayout>

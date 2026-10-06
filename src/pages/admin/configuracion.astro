@@ -3,6 +3,7 @@ export const prerender = false;
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import FileUploader from '@/components/admin/FileUploader.astro';
 import { getSiteSettings, setSiteSettings } from '@/lib/db';
+import { QUOTE_DEFAULTS } from '@/lib/quote';
 
 if (!Astro.locals.user) return Astro.redirect('/admin/login');
 
@@ -17,16 +18,25 @@ if (Astro.request.method === 'POST') {
     'social_instagram', 'social_facebook', 'social_tiktok', 'social_linkedin',
     'contact_email',
     'promo_modal_image', 'promo_modal_video_url', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
+    'promo_modal_trigger',
+    'quote_title', 'quote_subtitle',
+    'quote_q1_label', 'quote_q1_options', 'quote_q2_label', 'quote_q2_options', 'quote_q3_label', 'quote_q3_options',
+    'quote_button_text', 'quote_message_intro',
   ];
   const entries: Record<string, string> = {};
-  for (const key of keys) entries[key] = form.get(key)?.toString() ?? '';
+  for (const key of keys) entries[key] = (form.get(key)?.toString() ?? '').replace(/\r\n/g, '\n');
   entries.promo_modal_enabled = form.get('promo_modal_enabled') === 'on' ? '1' : '0';
+  entries.quote_enabled = form.get('quote_enabled') === 'on' ? '1' : '0';
+  entries.quote_ask_name = form.get('quote_ask_name') === 'on' ? '1' : '0';
 
   await setSiteSettings(db, entries);
   saved = true;
 }
 
-const settings = await getSiteSettings(db);
+// Lo que todavía no se ha guardado nunca (p. ej. el cotizador recién agregado) se muestra con su valor inicial.
+const settings = { ...QUOTE_DEFAULTS, ...(await getSiteSettings(db)) };
+const promoTrigger = settings.promo_modal_trigger || 'tiempo';
+const inputClass = 'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]';
 ---
 
 <AdminLayout title="Configuración">
@@ -36,7 +46,7 @@ const settings = await getSiteSettings(db);
     guardes aquí se ve en la web al instante — no tienes que publicar ni esperar nada.
   </p>
 
-  {saved && <p class="mt-4 rounded-lg bg-[var(--color-gold)]/10 px-4 py-2 text-sm font-semibold text-[var(--color-gold)]">✓ Listo, ya quedó guardado y visible en el sitio.</p>}
+  {saved && <p class="mt-4 rounded-lg bg-[var(--color-accent)]/10 px-4 py-2 text-sm font-semibold text-[var(--color-accent)]">✓ Listo, ya quedó guardado y visible en el sitio.</p>}
 
   <form method="POST" class="mt-8 space-y-10">
     <section class="glass-card p-6">
@@ -48,20 +58,21 @@ const settings = await getSiteSettings(db);
           label="Tu foto o avatar"
           accept="image/*"
           folder="hero"
-          hint="JPEG, PNG o WebP, ideal en formato vertical (como una foto de medio cuerpo). Es la imagen circular grande junto a tu título."
+          hint="JPEG, PNG o WebP en formato vertical (como una foto de medio cuerpo). Es la foto grande junto a tu título. Se reduce sola al subirla para que la página cargue rápido."
           currentValue={settings.hero_avatar_url}
         />
         <div>
           <label class="mb-1 block text-sm font-semibold" for="hero_title">Título principal</label>
-          <input id="hero_title" name="hero_title" value={settings.hero_title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="hero_title" name="hero_title" value={settings.hero_title} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">Para resaltar palabras en color ámbar, escríbelas entre asteriscos. Ejemplo: Tu aliada estratégica en *importaciones* y logística.</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="hero_subtitle">Subtítulo</label>
-          <textarea id="hero_subtitle" name="hero_subtitle" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{settings.hero_subtitle}</textarea>
+          <textarea id="hero_subtitle" name="hero_subtitle" rows="3" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]">{settings.hero_subtitle}</textarea>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="hero_video_url">Video de presentación (opcional)</label>
-          <input id="hero_video_url" name="hero_video_url" value={settings.hero_video_url} placeholder="https://youtube.com/watch?v=..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="hero_video_url" name="hero_video_url" value={settings.hero_video_url} placeholder="https://youtube.com/watch?v=..." class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
           <p class="mt-1 text-xs text-[var(--color-text-muted)]">Pega el link de YouTube o Vimeo tal cual lo copias del navegador. Si lo dejas vacío, simplemente no aparece el botón de "Ver video" — no pasa nada.</p>
         </div>
       </div>
@@ -75,32 +86,32 @@ const settings = await getSiteSettings(db);
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <label class="mb-1 block text-sm font-semibold" for="whatsapp_number">Teléfono de WhatsApp</label>
-          <input id="whatsapp_number" name="whatsapp_number" value={settings.whatsapp_number} placeholder="573000000000" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="whatsapp_number" name="whatsapp_number" value={settings.whatsapp_number} placeholder="573000000000" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
           <p class="mt-1 text-xs text-[var(--color-text-muted)]">Con código de país y sin espacios ni el símbolo +. Ejemplo: 573001234567.</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="whatsapp_message">Mensaje que llega ya escrito</label>
-          <input id="whatsapp_message" name="whatsapp_message" value={settings.whatsapp_message} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="whatsapp_message" name="whatsapp_message" value={settings.whatsapp_message} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="contact_email">Correo de contacto</label>
-          <input id="contact_email" name="contact_email" type="email" value={settings.contact_email} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="contact_email" name="contact_email" type="email" value={settings.contact_email} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="social_instagram">Instagram</label>
-          <input id="social_instagram" name="social_instagram" placeholder="https://instagram.com/tu_usuario" value={settings.social_instagram} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="social_instagram" name="social_instagram" placeholder="https://instagram.com/tu_usuario" value={settings.social_instagram} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="social_facebook">Facebook</label>
-          <input id="social_facebook" name="social_facebook" placeholder="https://facebook.com/tu_pagina" value={settings.social_facebook} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="social_facebook" name="social_facebook" placeholder="https://facebook.com/tu_pagina" value={settings.social_facebook} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="social_tiktok">TikTok</label>
-          <input id="social_tiktok" name="social_tiktok" placeholder="https://tiktok.com/@tu_usuario" value={settings.social_tiktok} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="social_tiktok" name="social_tiktok" placeholder="https://tiktok.com/@tu_usuario" value={settings.social_tiktok} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="social_linkedin">LinkedIn</label>
-          <input id="social_linkedin" name="social_linkedin" placeholder="https://linkedin.com/in/tu_perfil" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+          <input id="social_linkedin" name="social_linkedin" placeholder="https://linkedin.com/in/tu_perfil" value={settings.social_linkedin} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
         </div>
       </div>
     </section>
@@ -109,12 +120,13 @@ const settings = await getSiteSettings(db);
       <div class="mb-1 flex items-center justify-between">
         <h2 class="font-bold">Modal publicitario</h2>
         <label class="flex cursor-pointer items-center gap-2 text-sm">
-          <input type="checkbox" name="promo_modal_enabled" checked={settings.promo_modal_enabled === '1'} class="h-4 w-4 accent-[var(--color-gold)]" />
+          <input type="checkbox" name="promo_modal_enabled" checked={settings.promo_modal_enabled === '1'} class="h-4 w-4 accent-[var(--color-accent)]" />
           Activado
         </label>
       </div>
       <p class="text-xs text-[var(--color-text-muted)]">
-        Es la ventana emergente que le sale a la gente al entrar a tu página — ideal para una promoción puntual.
+        Es la ventana emergente que le sale a la gente mientras mira tu página — ideal para una promoción puntual.
+        Le sale una sola vez por visita.
         Si el interruptor de arriba está apagado, no le sale a nadie, así puedas dejar todo cargado y listo
         para activarlo cuando quieras.
       </p>
@@ -138,22 +150,96 @@ const settings = await getSiteSettings(db);
           currentValue={settings.promo_modal_video_url}
         />
         <div>
+          <label class="mb-1 block text-sm font-semibold" for="promo_modal_trigger">¿Cuándo aparece?</label>
+          <select id="promo_modal_trigger" name="promo_modal_trigger" class={inputClass}>
+            <option value="tiempo" selected={promoTrigger === 'tiempo'}>A los 8 segundos de estar en la página (recomendado)</option>
+            <option value="scroll" selected={promoTrigger === 'scroll'}>Cuando la persona baja hasta la mitad de la página</option>
+            <option value="salida" selected={promoTrigger === 'salida'}>Cuando la persona va a salir (en celular: a los 20 segundos)</option>
+          </select>
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">No aparece apenas se entra: así primero ven tu portada y Google no castiga la página.</p>
+        </div>
+        <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_text">Texto de la oferta</label>
-          <textarea id="promo_modal_text" name="promo_modal_text" rows="2" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]">{settings.promo_modal_text}</textarea>
+          <textarea id="promo_modal_text" name="promo_modal_text" rows="2" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]">{settings.promo_modal_text}</textarea>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label class="mb-1 block text-sm font-semibold" for="promo_modal_button_text">Texto del botón</label>
-            <input id="promo_modal_button_text" name="promo_modal_button_text" value={settings.promo_modal_button_text} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+            <input id="promo_modal_button_text" name="promo_modal_button_text" value={settings.promo_modal_button_text} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold" for="promo_modal_button_url">Link de redirección</label>
-            <input id="promo_modal_button_url" name="promo_modal_button_url" value={settings.promo_modal_button_url} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-gold)]" />
+            <input id="promo_modal_button_url" name="promo_modal_button_url" value={settings.promo_modal_button_url} class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]" />
           </div>
         </div>
       </div>
     </section>
 
-    <button type="submit" class="btn-gold">Guardar cambios</button>
+    <section id="cotizador" class="glass-card p-6">
+      <div class="mb-1 flex items-center justify-between gap-4">
+        <h2 class="font-bold">Cotizador</h2>
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" name="quote_enabled" checked={settings.quote_enabled === '1'} class="h-4 w-4 accent-[var(--color-accent)]" />
+          Visible en la página
+        </label>
+      </div>
+      <p class="text-xs text-[var(--color-text-muted)]">
+        Son unas preguntas con botones que la gente responde con un toque. Al final se abre WhatsApp con el mensaje ya
+        escrito con sus respuestas, listo para enviártelo. No se guarda nada en la página.
+        Mientras esté apagado nadie lo ve: ajústalo con calma y revísalo con el botón "Ver cómo se ve".
+      </p>
+      <a href="/cotizar?vista=cotizador" target="_blank" rel="noopener" class="btn-ghost mt-4 !py-2 !px-4 text-sm">Ver cómo se ve</a>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">Muestra lo último que guardaste: guarda primero los cambios.</p>
+
+      <div class="mt-6 space-y-4">
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="quote_title">Título</label>
+          <input id="quote_title" name="quote_title" value={settings.quote_title} class={inputClass} />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="quote_subtitle">Texto de apoyo</label>
+          <textarea id="quote_subtitle" name="quote_subtitle" rows="2" class={inputClass}>{settings.quote_subtitle}</textarea>
+        </div>
+
+        {[1, 2, 3].map((n) => (
+          <div class="rounded-xl border border-[var(--color-border)] p-4">
+            <p class="text-sm font-bold">Pregunta {n}</p>
+            <div class="mt-3 grid gap-4 sm:grid-cols-[1fr_1.2fr]">
+              <div>
+                <label class="mb-1 block text-xs font-semibold" for={`quote_q${n}_label`}>La pregunta</label>
+                <input id={`quote_q${n}_label`} name={`quote_q${n}_label`} value={settings[`quote_q${n}_label`]} class={inputClass} />
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-semibold" for={`quote_q${n}_options`}>Opciones (una por línea)</label>
+                <textarea id={`quote_q${n}_options`} name={`quote_q${n}_options`} rows="5" class={inputClass}>{settings[`quote_q${n}_options`]}</textarea>
+              </div>
+            </div>
+          </div>
+        ))}
+        <p class="text-xs text-[var(--color-text-muted)]">
+          Si borras una pregunta (o sus opciones), simplemente no sale. Debajo de cada pregunta siempre hay un espacio
+          para que la persona escriba otra respuesta.
+        </p>
+
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" name="quote_ask_name" checked={settings.quote_ask_name === '1'} class="h-4 w-4 accent-[var(--color-accent)]" />
+          Preguntar el nombre al final (opcional para la persona)
+        </label>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="quote_message_intro">Primera línea del mensaje</label>
+            <input id="quote_message_intro" name="quote_message_intro" value={settings.quote_message_intro} class={inputClass} />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-semibold" for="quote_button_text">Texto del botón final</label>
+            <input id="quote_button_text" name="quote_button_text" value={settings.quote_button_text} class={inputClass} />
+          </div>
+        </div>
+        <p class="text-xs text-[var(--color-text-muted)]">El mensaje llega al número de WhatsApp de la sección "Contacto y redes".</p>
+      </div>
+    </section>
+
+    <button type="submit" class="btn-accent">Guardar cambios</button>
   </form>
 </AdminLayout>

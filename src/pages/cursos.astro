@@ -1,0 +1,34 @@
+---
+// /cursos: solo los servicios de la categoría "curso" (formación). Sofía los maneja desde
+// Panel → Servicios y cursos, eligiendo la categoría "Curso".
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import ServicesGrid from '@/components/ServicesGrid.astro';
+import { getSiteSettings, getActiveServices } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+const [settings, services] = await Promise.all([getSiteSettings(db), getActiveServices(db)]);
+const courses = services.filter((s) => s.category === 'curso');
+---
+
+<BaseLayout
+  title="Cursos de importación desde China"
+  description="Cursos prácticos para aprender a importar desde China a Colombia sin intermediarios ni sobrecostos, con Sofía Ramírez."
+  settings={settings}
+  darkTop
+>
+  <PageHero
+    eyebrow="Formación"
+    title="Aprende a importar *por tu cuenta*"
+    subtitle="Cursos prácticos, con casos reales, para que entiendas cada paso de una importación desde China y tomes decisiones con seguridad."
+    crumbs={[{ label: 'Inicio', href: '/' }, { label: 'Cursos' }]}
+  />
+  <ServicesGrid
+    services={courses}
+    showHeading={false}
+    showFilters={false}
+    moreLink={{ href: '/servicios', label: 'Ver todos los servicios' }}
+    emptyText="Muy pronto abriremos nuevos cursos. Escríbenos por WhatsApp para avisarte."
+  />
+</BaseLayout>

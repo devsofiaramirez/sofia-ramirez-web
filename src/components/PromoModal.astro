@@ -1,8 +1,9 @@
 ---
 // Modal publicitario configurable desde /admin/configuracion.
-// Se renderiza server-side (mismo proyecto Astro+D1, sin necesidad de fetch cross-domain);
-// el script solo controla cuándo mostrarlo y precarga el media para evitar el flash/colapso visual.
-// Si hay video Y foto cargados, el video gana (es el formato más llamativo para una promo).
+// Ya no sale apenas se entra (tapaba la portada y Google lo tomaba como el contenido principal):
+// aparece según `trigger` —a los segundos, al bajar media página o al intentar irse— una sola vez
+// por visita. La imagen/video se descarga solo cuando va a mostrarse.
+// Si hay video Y foto cargados, gana el video (es el formato más llamativo para una promo).
 interface Props {
   enabled: boolean;
   image?: string;
@@ -10,76 +11,138 @@ interface Props {
   text?: string;
   buttonText?: string;
   buttonUrl?: string;
+  trigger?: string; // 'tiempo' (por defecto) | 'scroll' | 'salida'
 }
-const { enabled, image, videoUrl, text, buttonText, buttonUrl } = Astro.props;
+const { enabled, image, videoUrl, text, buttonText, buttonUrl, trigger = 'tiempo' } = Astro.props;
 const hasVideo = !!videoUrl;
 const shouldRender = enabled && (hasVideo || !!image);
+const hasFooter = !!text || !!buttonUrl;
 ---
 
 {shouldRender && (
   <div
     id="promo-modal-backdrop"
-    class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+    class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-[#0b1a30]/75 p-4 backdrop-blur-md"
+    data-open="false"
+    data-trigger={trigger || 'tiempo'}
+    role="dialog"
+    aria-modal="true"
+    aria-label="Promoción"
   >
-    <div class="glass-card relative max-h-[92vh] max-w-[min(36rem,92vw)] overflow-hidden !bg-[var(--color-bg-elevated)]">
+    <div class="modal-panel relative max-h-[92dvh] w-fit max-w-[min(34rem,92vw)] overflow-hidden rounded-3xl bg-white shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)]">
       <button
         id="promo-modal-close"
-        aria-label="Cerrar"
-        class="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:text-[var(--color-gold-light)]"
+        type="button"
+        aria-label="Cerrar promoción"
+        class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-transform hover:rotate-90"
       >
-        ✕
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
       {hasVideo ? (
-        <video id="promo-modal-media" src={videoUrl} class="block h-auto max-h-[68vh] w-auto max-w-full" autoplay muted loop playsinline controls></video>
+        <video id="promo-modal-media" data-src={videoUrl} class="block h-auto max-h-[70dvh] w-auto max-w-full" muted loop playsinline controls preload="none"></video>
       ) : (
-        <img id="promo-modal-media" src={image} alt="Promoción" class="block h-auto max-h-[68vh] w-auto max-w-full" />
+        <img id="promo-modal-media" data-src={image} alt="Promoción" class="block h-auto max-h-[70dvh] w-auto max-w-full" decoding="async" />
       )}
-      <div class="p-6 text-center">
-        {text && <p class="mb-4 text-[var(--color-text)]">{text}</p>}
-        {buttonUrl && (
-          <a href={buttonUrl} target="_blank" rel="noopener" class="btn-gold">
-            {buttonText || 'Quiero saber más'}
-          </a>
-        )}
-      </div>
+      {hasFooter && (
+        <div class="p-6 text-center">
+          {text && <p class="mb-4 text-[var(--color-text)]">{text}</p>}
+          {buttonUrl && (
+            <a href={buttonUrl} target="_blank" rel="noopener" class="btn-accent">
+              {buttonText || 'Quiero saber más'}
+            </a>
+          )}
+        </div>
+      )}
     </div>
   </div>
 )}
 
-{shouldRender && (
-  <script define:vars={{ hasVideo }} is:inline>
+<script>
+  import { getLenis, onPageLoad } from '@/scripts/motion';
+
+  const SEEN_KEY = 'promoModalShown';
+  const seen = () => {
+    try {
+      return sessionStorage.getItem(SEEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  };
+
+  onPageLoad(() => {
     const backdrop = document.getElementById('promo-modal-backdrop');
-    const closeBtn = document.getElementById('promo-modal-close');
-    const media = document.getElementById('promo-modal-media');
+    const media = document.getElementById('promo-modal-media') as HTMLImageElement | HTMLVideoElement | null;
+    if (!backdrop || !media) return;
+    const closeBtn = document.getElementById('promo-modal-close')!;
+    const ac = new AbortController();
+    const { signal } = ac;
+    const timers: number[] = [];
+    document.addEventListener('astro:before-swap', () => {
+      ac.abort();
+      timers.forEach(clearTimeout);
+    }, { once: true });
 
-    function closeModal() {
-      backdrop?.classList.add('hidden');
-      backdrop?.classList.remove('flex');
-    }
+    const close = () => {
+      if (backdrop.dataset.open !== 'true') return;
+      backdrop.dataset.open = 'false';
+      getLenis()?.start();
+      if (media instanceof HTMLVideoElement) media.pause();
+    };
+    closeBtn.addEventListener('click', close, { signal });
+    backdrop.addEventListener('click', (e) => e.target === backdrop && close(), { signal });
+    document.addEventListener('keydown', (e) => e.key === 'Escape' && close(), { signal });
 
-    if (backdrop && media && !sessionStorage.getItem('promoModalShown')) {
-      const show = () => {
-        backdrop.classList.remove('hidden');
-        backdrop.classList.add('flex');
-        sessionStorage.setItem('promoModalShown', '1');
+    if (seen()) return;
+    let fired = false;
+
+    // Descarga el medio solo ahora, y muestra el modal cuando ya está listo (sin "saltos").
+    const fire = () => {
+      if (fired || seen()) return;
+      fired = true;
+      ac.signal.aborted || cleanupTriggers();
+      const reveal = () => {
+        if (signal.aborted) return;
+        backdrop.dataset.open = 'true';
+        getLenis()?.stop();
+        closeBtn.focus({ preventScroll: true });
+        try {
+          sessionStorage.setItem(SEEN_KEY, '1');
+        } catch {}
+        if (media instanceof HTMLVideoElement) media.play().catch(() => {});
       };
-      // Precargar antes de mostrar para evitar el colapso visual mientras carga.
-      const readyEvent = hasVideo ? 'loadeddata' : 'load';
-      const isReady = hasVideo ? media.readyState >= 2 : media.complete;
-      if (isReady) {
-        setTimeout(show, 1200);
+      if (media instanceof HTMLVideoElement) {
+        media.addEventListener('loadeddata', reveal, { once: true, signal });
+        media.src = media.dataset.src!;
+        media.load();
       } else {
-        media.addEventListener(readyEvent, () => setTimeout(show, 300));
-        media.addEventListener('error', () => {}); // si falla el media, simplemente no se muestra
+        media.addEventListener('load', reveal, { once: true, signal });
+        media.src = media.dataset.src!;
       }
-    }
+    };
 
-    closeBtn?.addEventListener('click', closeModal);
-    backdrop?.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
-  </script>
-)}
+    const triggerAc = new AbortController();
+    const cleanupTriggers = () => triggerAc.abort();
+    signal.addEventListener('abort', cleanupTriggers);
+
+    const mode = backdrop.dataset.trigger;
+    if (mode === 'scroll') {
+      window.addEventListener(
+        'scroll',
+        () => {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          if (max > 0 && window.scrollY / max > 0.4) fire();
+        },
+        { passive: true, signal: triggerAc.signal }
+      );
+    } else if (mode === 'salida') {
+      // En computador: cuando el mouse sale por arriba (hacia las pestañas). En celular no existe ese gesto: 20 s.
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.addEventListener('mouseout', (e) => !e.relatedTarget && e.clientY <= 0 && fire(), { signal: triggerAc.signal });
+      } else {
+        timers.push(window.setTimeout(fire, 20000));
+      }
+    } else {
+      timers.push(window.setTimeout(fire, 8000));
+    }
+  });
+</script>

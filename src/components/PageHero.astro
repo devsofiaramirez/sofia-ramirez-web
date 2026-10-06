@@ -1,0 +1,57 @@
+---
+// Encabezado de las páginas de sección (/servicios, /cursos, /como-trabajamos, /testimonios, /cotizar):
+// franja oscura con ruta de navegación, título y texto. El título entra palabra por palabra como en el inicio.
+import { splitTitle, plainTitle } from '@/lib/utils';
+
+interface Props {
+  eyebrow: string;
+  title: string; // admite *palabras resaltadas*
+  subtitle?: string;
+  crumbs: { label: string; href?: string }[];
+}
+const { eyebrow, title, subtitle, crumbs } = Astro.props;
+const words = splitTitle(title);
+---
+
+<section class="hero page-hero scope-dark relative isolate overflow-hidden pt-32 pb-16 md:pt-40 md:pb-20">
+  <div class="hero-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="aurora -z-10" style="width:36rem;height:36rem;top:-18rem;right:-10rem;background:#2c5282;" aria-hidden="true"></div>
+  <div class="aurora -z-10" style="width:22rem;height:22rem;bottom:-14rem;left:-6rem;background:#f59e0b;opacity:.2;animation-delay:-5s" aria-hidden="true"></div>
+
+  <div class="container">
+    <nav class="mb-8 flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]" aria-label="Ruta de navegación" data-intro>
+      {crumbs.map((c, i) => (
+        <>
+          {i > 0 && <span aria-hidden="true">/</span>}
+          {c.href ? (
+            <a href={c.href} class="transition-colors hover:text-[var(--color-accent-text)]">{c.label}</a>
+          ) : (
+            <span class="text-[var(--color-text)]" aria-current="page">{c.label}</span>
+          )}
+        </>
+      ))}
+    </nav>
+    <p class="eyebrow" data-intro>{eyebrow}</p>
+    <h1 class="h1-display max-w-4xl font-extrabold" aria-label={plainTitle(title)}>
+      {words.map((w) => (
+        <><span class="split-word" aria-hidden="true"><span class={w.highlight ? 'highlight' : ''}>{w.word}</span></span>{' '}</>
+      ))}
+    </h1>
+    {subtitle && <p class="mt-6 max-w-2xl text-lg leading-relaxed text-[var(--color-text-muted)]" data-intro>{subtitle}</p>}
+  </div>
+</section>
+
+<script>
+  import { gsap, reducedMotion, onPageLoad } from '@/scripts/motion';
+
+  onPageLoad(() => {
+    const hero = document.querySelector<HTMLElement>('.page-hero');
+    if (!hero) return;
+    hero.classList.add('is-ready');
+    if (reducedMotion()) return;
+    gsap
+      .timeline({ defaults: { ease: 'expo.out' } })
+      .from(hero.querySelectorAll('.split-word > span'), { yPercent: 110, duration: 1, stagger: 0.05 })
+      .from(hero.querySelectorAll('[data-intro]'), { y: 20, opacity: 0, duration: 0.9, stagger: 0.08, clearProps: 'all' }, 0.1);
+  });
+</script>

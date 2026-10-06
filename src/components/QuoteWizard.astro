@@ -1,0 +1,180 @@
+---
+// Cotizador rápido: unas preguntas con botones que arman el mensaje de WhatsApp ya escrito.
+// Se configura en /admin/configuracion → "Cotizador" (ver src/lib/quote.ts). No guarda nada:
+// las respuestas solo viajan en el mensaje que la persona decide enviar.
+import type { QuoteConfig } from '@/lib/quote';
+
+interface Props {
+  config: QuoteConfig;
+  whatsappNumber: string;
+  /** Vista previa para Sofía con el cotizador apagado (solo con sesión iniciada). */
+  preview?: boolean;
+  /** En /cotizar el título ya lo pone el PageHero: aquí solo va el texto de apoyo. */
+  compact?: boolean;
+}
+const { config, whatsappNumber, preview = false, compact = false } = Astro.props;
+const totalSteps = config.questions.length + (config.askName ? 1 : 0);
+const waDigits = (whatsappNumber ?? '').replace(/[^0-9]/g, '');
+---
+
+<section id="cotizar" class="section-padding relative overflow-hidden">
+  <div class="container grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+    <div data-reveal>
+      {preview && (
+        <p class="mb-6 rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-accent-text)]">
+          Vista previa: el cotizador está apagado. Solo tú lo ves porque iniciaste sesión en el panel.
+        </p>
+      )}
+      {!compact && (
+        <>
+          <p class="eyebrow">Cotizador</p>
+          <h2 class="h2-display font-extrabold">{config.title}</h2>
+        </>
+      )}
+      <p class:list={['max-w-md text-[var(--color-text-muted)]', compact ? 'text-lg' : 'mt-4']}>{config.subtitle}</p>
+      <ul class="mt-8 space-y-3 text-sm">
+        {['Sin compromiso y sin registrarte', 'Te responde Sofía directamente', 'Tus datos no se guardan en la página'].map((b) => (
+          <li class="flex items-center gap-3">
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-accent)]/20 text-[var(--color-accent-text)]" aria-hidden="true">
+              <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>
+            </span>
+            {b}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="quote card-soft relative overflow-hidden p-6 sm:p-8" data-reveal data-wa={waDigits} data-intro-text={config.messageIntro} style="--reveal-delay:120ms">
+      <!-- Progreso -->
+      <div class="mb-8 flex items-center gap-4">
+        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-bg-elevated-2)]">
+          <div class="quote-bar h-full w-0 rounded-full bg-[var(--color-accent)] transition-[width] duration-500"></div>
+        </div>
+        <p class="quote-count shrink-0 text-xs font-semibold text-[var(--color-text-muted)]" aria-live="polite">Paso 1 de {totalSteps}</p>
+      </div>
+
+      {config.questions.map((q, qi) => (
+        <fieldset class="quote-step" data-step={qi} data-label={q.label} hidden={qi > 0}>
+          <legend class="font-[family-name:var(--font-display)] text-xl font-bold sm:text-2xl">{q.label}</legend>
+          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            {q.options.map((opt) => (
+              <button type="button" class="quote-option rounded-2xl border-2 border-[var(--color-border)] bg-white px-4 py-3.5 text-left text-sm font-semibold" aria-pressed="false" data-value={opt}>
+                {opt}
+              </button>
+            ))}
+          </div>
+          <label class="mt-4 block">
+            <span class="sr-only">Otra respuesta</span>
+            <input type="text" maxlength="120" class="quote-other w-full rounded-2xl border-2 border-[var(--color-border)] bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--color-accent)]" placeholder="Otra respuesta (escríbela aquí)" />
+          </label>
+        </fieldset>
+      ))}
+
+      {config.askName && (
+        <fieldset class="quote-step" data-step={config.questions.length} data-label="Mi nombre" hidden>
+          <legend class="font-[family-name:var(--font-display)] text-xl font-bold sm:text-2xl">¿Cómo te llamas?</legend>
+          <p class="mt-2 text-sm text-[var(--color-text-muted)]">Opcional: así Sofía sabe con quién habla.</p>
+          <input type="text" maxlength="80" autocomplete="name" class="quote-other mt-6 w-full rounded-2xl border-2 border-[var(--color-border)] bg-white px-4 py-3.5 text-sm outline-none transition-colors focus:border-[var(--color-accent)]" placeholder="Tu nombre o el de tu empresa" />
+        </fieldset>
+      )}
+
+      <!-- Resumen final -->
+      <div class="quote-done quote-step" hidden>
+        <p class="font-[family-name:var(--font-display)] text-xl font-bold sm:text-2xl">¡Listo! Así le llega tu mensaje a Sofía:</p>
+        <pre class="quote-preview mt-5 max-h-64 overflow-auto whitespace-pre-wrap rounded-2xl bg-[var(--color-bg-elevated)] p-5 font-[family-name:var(--font-body)] text-sm leading-relaxed text-[var(--color-text)]"></pre>
+        <a class="quote-send btn-accent mt-6 w-full" href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener">
+          {config.buttonText}
+          <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+
+      <div class="mt-8 flex items-center justify-between gap-3">
+        <button type="button" class="quote-back btn-ghost !px-5 !py-2.5 text-sm" hidden>Atrás</button>
+        <button type="button" class="quote-next btn-dark ml-auto !px-6 !py-2.5 text-sm" disabled>
+          Siguiente
+          <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onPageLoad } from '@/scripts/motion';
+
+  onPageLoad(() => {
+    const box = document.querySelector<HTMLElement>('.quote');
+    if (!box) return;
+    const steps = [...box.querySelectorAll<HTMLElement>('fieldset.quote-step')];
+    const done = box.querySelector<HTMLElement>('.quote-done')!;
+    const bar = box.querySelector<HTMLElement>('.quote-bar')!;
+    const count = box.querySelector<HTMLElement>('.quote-count')!;
+    const back = box.querySelector<HTMLButtonElement>('.quote-back')!;
+    const next = box.querySelector<HTMLButtonElement>('.quote-next')!;
+    const preview = box.querySelector<HTMLElement>('.quote-preview')!;
+    const send = box.querySelector<HTMLAnchorElement>('.quote-send')!;
+    const answers: string[] = steps.map(() => '');
+    let current = 0;
+
+    const isNameStep = (i: number) => !steps[i].querySelector('.quote-option');
+
+    const show = (i: number) => {
+      current = i;
+      const finished = i >= steps.length;
+      steps.forEach((s, k) => (s.hidden = k !== i));
+      done.hidden = !finished;
+      // Reinicia la animación de entrada del paso.
+      const el = finished ? done : steps[i];
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+      bar.style.width = `${(Math.min(i, steps.length) / steps.length) * 100}%`;
+      count.textContent = finished ? 'Resumen' : `Paso ${i + 1} de ${steps.length}`;
+      back.hidden = i === 0;
+      next.hidden = finished;
+      next.disabled = !finished && !isNameStep(i) && !answers[i];
+      next.firstChild!.textContent = i === steps.length - 1 ? 'Ver mi mensaje ' : 'Siguiente ';
+      if (finished) {
+        const lines = [box.dataset.introText || 'Hola Sofía, quiero cotizar una importación.', ''];
+        steps.forEach((s, k) => {
+          if (!answers[k]) return;
+          const label = s.dataset.label!.trim();
+          lines.push(`• ${label}${/[?:]$/.test(label) ? '' : ':'} ${answers[k]}`);
+        });
+        const message = lines.join('\n').trim();
+        preview.textContent = message;
+        send.href = `https://wa.me/${box.dataset.wa}?text=${encodeURIComponent(message)}`;
+      }
+    };
+
+    steps.forEach((step, i) => {
+      const options = [...step.querySelectorAll<HTMLButtonElement>('.quote-option')];
+      const other = step.querySelector<HTMLInputElement>('.quote-other');
+      options.forEach((opt) =>
+        opt.addEventListener('click', () => {
+          options.forEach((o) => o.setAttribute('aria-pressed', String(o === opt)));
+          if (other) other.value = '';
+          answers[i] = opt.dataset.value!;
+          next.disabled = false;
+          // Elegir una opción avanza solo (un toque menos); escribir en "Otra" exige tocar Siguiente.
+          setTimeout(() => current === i && show(i + 1), 280);
+        })
+      );
+      other?.addEventListener('input', () => {
+        options.forEach((o) => o.setAttribute('aria-pressed', 'false'));
+        answers[i] = other.value.trim();
+        next.disabled = !isNameStep(i) && !answers[i];
+      });
+      other?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !next.disabled) {
+          e.preventDefault();
+          show(i + 1);
+        }
+      });
+    });
+
+    next.addEventListener('click', () => show(current + 1));
+    back.addEventListener('click', () => show(Math.max(0, (current >= steps.length ? steps.length : current) - 1)));
+    show(0);
+  });
+</script>

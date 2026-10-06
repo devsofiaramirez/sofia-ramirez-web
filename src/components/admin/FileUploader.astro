@@ -17,7 +17,7 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
 
   <label class="block text-sm font-semibold" for={`file_${uid}`}>{label}</label>
 
-  <div id={`zone_${uid}`} class="relative rounded-2xl border-2 border-dashed border-[var(--color-border)] p-6 text-center transition-colors hover:border-[var(--color-gold)]">
+  <div id={`zone_${uid}`} class="relative rounded-2xl border-2 border-dashed border-[var(--color-border)] p-6 text-center transition-colors hover:border-[var(--color-accent)]">
     <input type="file" id={`file_${uid}`} accept={accept} class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
 
     <div id={`placeholder_${uid}`} class={currentValue ? 'hidden' : ''}>
@@ -27,17 +27,17 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
 
     <div id={`preview_${uid}`} class={currentValue ? '' : 'hidden'}>
       {!isVideo && <img id={`img_${uid}`} src={currentValue ?? ''} alt="Preview" class="mx-auto h-24 rounded-xl object-cover" />}
-      {isVideo && <p class="font-semibold text-[var(--color-gold)]">Video cargado</p>}
+      {isVideo && <p class="font-semibold text-[var(--color-accent)]">Video cargado</p>}
       <p id={`fname_${uid}`} class="mt-1 truncate text-xs text-[var(--color-text-muted)]">{currentValue?.split('/').pop()}</p>
     </div>
   </div>
 
   <div id={`progress_${uid}`} class="hidden h-1.5 rounded-full bg-[var(--color-bg-elevated-2)]">
-    <div id={`bar_${uid}`} class="h-full rounded-full bg-[var(--color-gold)]" style="width:0%"></div>
+    <div id={`bar_${uid}`} class="h-full rounded-full bg-[var(--color-accent)]" style="width:0%"></div>
   </div>
   <p id={`error_${uid}`} class="hidden text-xs text-red-700"><span id={`errtext_${uid}`}></span></p>
-  <div id={`success_${uid}`} class="hidden flex items-center justify-between rounded-xl bg-[var(--color-gold)]/10 px-3 py-2 text-xs">
-    <span class="font-semibold text-[var(--color-gold)]">Archivo subido</span>
+  <div id={`success_${uid}`} class="hidden flex items-center justify-between rounded-xl bg-[var(--color-accent)]/10 px-3 py-2 text-xs">
+    <span class="font-semibold text-[var(--color-accent)]">Archivo subido</span>
     <button type="button" id={`clear_${uid}`} class="text-red-600 hover:text-red-700">Quitar</button>
   </div>
 </div>
@@ -57,7 +57,38 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
     const successEl = document.getElementById(`success_${uid}`);
     const clearBtn = document.getElementById(`clear_${uid}`);
 
-    function uploadFile(file) {
+    // Las fotos se reducen en el navegador antes de subirlas (máx. 1800 px de lado, WebP):
+    // una foto de celular o de IA de 8–10 MB queda en unos cientos de KB y la página carga rápido.
+    // Si algo falla o el resultado no es más liviano, se sube la original.
+    const MAX_SIDE = 1800;
+    async function optimizeImage(file) {
+      if (!/^image\/(jpeg|jpg|png|webp)$/.test(file.type)) return file;
+      try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+        if (scale === 1 && file.size < 400 * 1024) return file;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close?.();
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/webp', 0.82));
+        if (!blob || blob.type !== 'image/webp' || blob.size >= file.size) return file;
+        const name = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+        return new File([blob], name, { type: 'image/webp' });
+      } catch {
+        return file;
+      }
+    }
+
+    const fmt = (b) => (b > 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`);
+
+    async function uploadFile(original) {
+      progressEl.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+      barEl.style.width = '5%';
+      const file = await optimizeImage(original);
+      const sizeNote = file !== original ? ` (optimizada: ${fmt(original.size)} → ${fmt(file.size)})` : '';
       progressEl.classList.remove('hidden');
       errorEl.classList.add('hidden');
       barEl.style.width = '0%';
@@ -90,7 +121,7 @@ const uid = field.replace(/[^a-zA-Z0-9]/g, '_');
         placeholder.classList.add('hidden');
         preview.classList.remove('hidden');
         if (imgEl && data.type === 'image') imgEl.src = data.url;
-        if (fnameEl) fnameEl.textContent = file.name;
+        if (fnameEl) fnameEl.textContent = file.name + sizeNote;
         successEl.classList.remove('hidden');
       };
       xhr.onerror = () => {

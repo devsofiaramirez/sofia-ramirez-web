@@ -1,0 +1,147 @@
+---
+// "Cómo trabajamos": el recorrido de una importación, de la primera conversación a la entrega.
+// Reemplaza al globo animado: en vez de decorar, explica el proceso. Al bajar, la línea ámbar
+// avanza (GSAP ScrollTrigger con scrub), una caja la recorre y cada parada se enciende al llegar.
+// Sin JS o con "reducir movimiento" se ve todo completo y quieto.
+// Sin fechas ni cifras a propósito: aún no hay datos reales que mostrar.
+interface Props {
+  /** En el inicio: título de sección + enlace a /como-trabajamos. En la página propia: sin título (lo pone el PageHero). */
+  showHeading?: boolean;
+  showCapabilities?: boolean;
+  moreLink?: { href: string; label: string };
+}
+const { showHeading = true, showCapabilities = true, moreLink } = Astro.props;
+
+const stops = [
+  { place: 'Contigo', title: 'Cotización y plan', desc: 'Revisamos qué necesitas importar, cuánto y para cuándo, y armamos el plan completo contigo.' },
+  { place: 'En China', title: 'Compra y control', desc: 'Contacto con proveedores, compra, control de calidad y consolidación de tu carga.' },
+  { place: 'En tránsito', title: 'Transporte y trámites', desc: 'Embarque, documentación e importación resueltos por nosotros, con seguimiento en cada etapa.' },
+  { place: 'Cúcuta', title: 'Entrega acordada', desc: 'Tu mercancía llega a nuestra bodega o al lugar acordado, lista para vender o distribuir.' },
+];
+
+const capabilities = [
+  { label: 'Gestión administrativa', desc: 'Trámites y documentación de importación, resueltos por nosotros.', icon: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>' },
+  { label: 'Gestión logística', desc: 'Bodega propia en Cúcuta y control de tu carga en cada etapa.', icon: '<path d="M1 7h13v10H1zM14 11h4l3 3v3h-7"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>' },
+  { label: 'Capacitaciones', desc: 'Cursos prácticos para que aprendas a importar por tu cuenta.', icon: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>' },
+  { label: 'Asesoría', desc: 'Acompañamiento personalizado en cada decisión de tu negocio.', icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/>' },
+];
+---
+
+<section id="como-trabajamos" class="section-padding relative overflow-hidden">
+  <div class="container">
+    {showHeading && (
+      <div class="mb-16 grid gap-6 lg:mb-20 lg:grid-cols-[1fr_1fr] lg:items-end">
+        <div data-reveal>
+          <p class="eyebrow">Cómo trabajamos</p>
+          <h2 class="h2-display font-extrabold">De China a tu bodega, <span class="highlight">paso a paso</span></h2>
+        </div>
+        <p class="max-w-lg text-[var(--color-text-muted)] lg:justify-self-end" data-reveal style="--reveal-delay:120ms">
+          Una sola persona responsable de tu carga de principio a fin: sabes en qué va tu mercancía y a quién preguntarle.
+        </p>
+      </div>
+    )}
+
+    <!-- Recorrido -->
+    <div class="journey relative" style="--journey: 1">
+      <div class="journey-track pointer-events-none absolute left-[1.25rem] top-[1.25rem] w-0.5 -translate-x-1/2 lg:left-[12.5%] lg:right-[12.5%] lg:top-[1.25rem] lg:h-0.5 lg:w-auto lg:translate-x-0 lg:-translate-y-1/2" aria-hidden="true">
+        <div class="absolute inset-0 rounded-full bg-[var(--color-bg-elevated-2)]"></div>
+        <div class="journey-fill absolute inset-0 rounded-full bg-gradient-to-b from-[var(--color-accent)] to-[var(--color-accent-dark)] lg:bg-gradient-to-r"></div>
+        <div class="journey-runner absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl bg-[var(--color-brand)] text-white shadow-lg">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+        </div>
+      </div>
+
+      <ol class="relative grid gap-10 lg:grid-cols-4 lg:gap-6">
+        {stops.map((s, i) => (
+          <li class="journey-stop relative pl-16 lg:pl-0 lg:pt-16 lg:text-center" data-active="true">
+            <span class="journey-dot absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--color-bg-elevated-2)] bg-white font-[family-name:var(--font-display)] text-sm font-extrabold text-[var(--color-text-muted)] lg:left-1/2 lg:-translate-x-1/2">
+              {i + 1}
+            </span>
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-accent-text)]">{s.place}</p>
+            <h3 class="mt-2 text-xl font-bold">{s.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-[var(--color-text-muted)] lg:mx-auto lg:max-w-[16rem]">{s.desc}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    {moreLink && (
+      <div class="mt-16 flex justify-center" data-reveal>
+        <a href={moreLink.href} class="btn-ghost">
+          {moreLink.label}
+          <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    )}
+
+    <!-- Todo bajo un mismo aliado -->
+    {showCapabilities && <>
+    <h2 class="mt-24 text-center font-[family-name:var(--font-display)] text-2xl font-extrabold md:text-3xl" data-reveal>Todo bajo un mismo aliado</h2>
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {capabilities.map((c, i) => (
+        <div class="card-soft spotlight group p-6" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+          <span class="relative z-[2] flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-brand)] text-white transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110" aria-hidden="true">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" set:html={c.icon} />
+          </span>
+          <p class="relative z-[2] mt-5 font-bold">{c.label}</p>
+          <p class="relative z-[2] mt-1.5 text-sm text-[var(--color-text-muted)]">{c.desc}</p>
+        </div>
+      ))}
+    </div>
+    </>}
+  </div>
+</section>
+
+<style>
+  .journey-runner {
+    left: 50%;
+    top: calc(var(--journey) * 100%);
+  }
+  @media (min-width: 1024px) {
+    .journey-runner {
+      top: 50%;
+      left: calc(var(--journey) * 100%);
+    }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger, reducedMotion, onPageLoad } from '@/scripts/motion';
+
+  onPageLoad(() => {
+    const journey = document.querySelector<HTMLElement>('.journey');
+    if (!journey) return;
+    const track = journey.querySelector<HTMLElement>('.journey-track')!;
+    const stops = [...journey.querySelectorAll<HTMLElement>('.journey-stop')];
+    const desktop = window.matchMedia('(min-width: 1024px)');
+
+    // En celular la línea es vertical: va del primer punto al último (se mide porque los textos cambian de alto).
+    const sizeTrack = () => {
+      if (desktop.matches) {
+        track.style.height = '';
+        return;
+      }
+      const first = stops[0].offsetTop;
+      const last = stops[stops.length - 1].offsetTop;
+      track.style.height = `${last - first}px`;
+    };
+    sizeTrack();
+    window.addEventListener('resize', sizeTrack);
+    document.addEventListener('astro:before-swap', () => window.removeEventListener('resize', sizeTrack), { once: true });
+
+    if (reducedMotion()) return; // se queda completo (--journey: 1 y todas encendidas)
+
+    const paint = (p: number) => {
+      journey.style.setProperty('--journey', p.toFixed(4));
+      stops.forEach((s, i) => (s.dataset.active = String(p >= i / (stops.length - 1) - 0.02)));
+    };
+    paint(0);
+    ScrollTrigger.create({
+      trigger: journey,
+      start: 'top 70%',
+      end: 'bottom 55%',
+      scrub: 0.6,
+      onUpdate: (self) => paint(self.progress),
+    });
+  });
+</script>

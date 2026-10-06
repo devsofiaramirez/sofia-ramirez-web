@@ -1,6 +1,6 @@
 ---
-// Wordmark tipográfico de la marca — blanco roto + dorado metalizado.
-// Placeholder hasta que exista un logo/isotipo real (ver GUIA imágenes, sección "Assets de marca").
+// Wordmark tipográfico de la marca: "SOFÍA" en el color del texto + "RAMÍREZ" en ámbar.
+// Provisional hasta que exista un logo/isotipo real (ver ASSETS-NECESARIOS.md).
 interface Props {
   variant?: 'full' | 'compact';
   class?: string;
@@ -10,21 +10,22 @@ const { variant = 'full', class: className = '' } = Astro.props;
 
 {variant === 'full' ? (
   <div class={`inline-flex flex-col ${className}`}>
-    <span class="font-[var(--font-display)] font-extrabold tracking-tight text-2xl md:text-3xl leading-none">
+    <span class="font-[family-name:var(--font-display)] font-extrabold tracking-tight text-2xl md:text-3xl leading-none">
       <span class="text-[var(--color-text)]">SOFÍA</span>{' '}
-      <span class="gold-gradient-text">RAMÍREZ</span>
+      <span class="text-[var(--color-accent-text)]">RAMÍREZ</span>
     </span>
-    <span class="mt-1 text-[0.65rem] md:text-xs tracking-[0.3em] uppercase text-[var(--color-text-muted)]">
+    <span class="mt-1.5 text-[0.65rem] md:text-xs tracking-[0.3em] uppercase text-[var(--color-text-muted)]">
       Importaciones &amp; Consultoría
     </span>
   </div>
 ) : (
   <div class={`inline-flex items-center gap-3 ${className}`}>
-    <span class="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-gold)] font-[var(--font-display)] font-bold text-sm gold-gradient-text">
+    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-accent)] font-[family-name:var(--font-display)] text-sm font-extrabold text-[var(--color-ink)] shadow-[0_8px_20px_-8px_rgba(245,158,11,0.8)]">
       SR
     </span>
-    <span class="font-[var(--font-display)] font-bold tracking-tight text-lg leading-none text-[var(--color-text)]">
-      Sofía Ramírez
+    <span class="flex flex-col leading-none">
+      <span class="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-tight text-[var(--color-text)] transition-colors">Sofía Ramírez</span>
+      <span class="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-muted)] transition-colors">Importaciones</span>
     </span>
   </div>
 )}

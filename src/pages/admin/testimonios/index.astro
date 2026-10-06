@@ -36,7 +36,7 @@ const testimonials = await getAllTestimonials(db);
 <AdminLayout title="Testimonios">
   <div class="mb-2 flex items-center justify-between">
     <h1 class="text-2xl font-bold">Testimonios</h1>
-    <a href="/admin/testimonios/nuevo" class="btn-gold !py-2 !px-4 text-sm">+ Nuevo</a>
+    <a href="/admin/testimonios/nuevo" class="btn-accent !py-2 !px-4 text-sm">+ Nuevo</a>
   </div>
   <p class="mb-6 text-sm text-[var(--color-text-muted)]">
     Estos son los casos de éxito que la gente ve antes de escribirte. Entre más reales y específicos, más confianza generan.
@@ -51,7 +51,7 @@ const testimonials = await getAllTestimonials(db);
           <p class="text-xs text-[var(--color-text-muted)]">{t.author_role}</p>
         </div>
 
-        <span class={`rounded px-2 py-1 text-xs font-bold ${t.is_active ? 'bg-[var(--color-gold)]/15 text-[var(--color-gold)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
+        <span class={`rounded px-2 py-1 text-xs font-bold ${t.is_active ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]' : 'bg-black/5 text-[var(--color-text-muted)]'}`}>
           {t.is_active ? 'Activo' : 'Oculto'}
         </span>
 
@@ -59,22 +59,22 @@ const testimonials = await getAllTestimonials(db);
           <form method="POST">
             <input type="hidden" name="action" value="move-up" />
             <input type="hidden" name="id" value={t.id} />
-            <button type="submit" disabled={i === 0} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▲</button>
+            <button type="submit" disabled={i === 0} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-accent)] disabled:opacity-30">▲</button>
           </form>
           <form method="POST">
             <input type="hidden" name="action" value="move-down" />
             <input type="hidden" name="id" value={t.id} />
-            <button type="submit" disabled={i === testimonials.length - 1} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-gold)] disabled:opacity-30">▼</button>
+            <button type="submit" disabled={i === testimonials.length - 1} class="rounded p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-accent)] disabled:opacity-30">▼</button>
           </form>
         </div>
 
         <form method="POST">
           <input type="hidden" name="action" value="toggle" />
           <input type="hidden" name="id" value={t.id} />
-          <button type="submit" class="text-sm text-[var(--color-gold)] hover:underline">{t.is_active ? 'Ocultar' : 'Activar'}</button>
+          <button type="submit" class="text-sm text-[var(--color-accent)] hover:underline">{t.is_active ? 'Ocultar' : 'Activar'}</button>
         </form>
 
-        <a href={`/admin/testimonios/${t.id}`} class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-gold)]">Editar</a>
+        <a href={`/admin/testimonios/${t.id}`} class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">Editar</a>
 
         <form method="POST" onsubmit="return confirm('¿Eliminar este testimonio?')">
           <input type="hidden" name="action" value="delete" />

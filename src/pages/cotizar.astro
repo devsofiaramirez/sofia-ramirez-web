@@ -1,0 +1,34 @@
+---
+// /cotizar: el cotizador rápido. Solo existe si está prendido en Panel → Configuración → Cotizador.
+// Con el cotizador apagado, Sofía lo puede ver en /cotizar?vista=cotizador si inició sesión en el panel;
+// cualquier otra visita va al inicio.
+export const prerender = false;
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import QuoteWizard from '@/components/QuoteWizard.astro';
+import { getSiteSettings } from '@/lib/db';
+import { getQuoteConfig } from '@/lib/quote';
+
+const db = Astro.locals.runtime.env.DB;
+const settings = await getSiteSettings(db);
+const quote = getQuoteConfig(settings);
+const preview = !quote.enabled && !!Astro.locals.user && Astro.url.searchParams.get('vista') === 'cotizador';
+
+if (!quote.enabled && !preview) return Astro.redirect('/', 302);
+if (preview) Astro.response.headers.set('Cache-Control', 'private, no-store');
+---
+
+<BaseLayout
+  title="Cotiza tu importación desde China"
+  description="Responde tres preguntas y envía tu solicitud de cotización por WhatsApp a Sofía Ramírez. Sin compromiso."
+  settings={settings}
+  darkTop
+  noindex={preview}
+>
+  <PageHero
+    eyebrow="Cotizador"
+    title={quote.title}
+    crumbs={[{ label: 'Inicio', href: '/' }, { label: 'Cotizar' }]}
+  />
+  <QuoteWizard config={{ ...quote, enabled: true }} whatsappNumber={settings.whatsapp_number} preview={preview} compact />
+</BaseLayout>

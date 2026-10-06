@@ -4,6 +4,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PlaceholderImage from '@/components/PlaceholderImage.astro';
 import { getSiteSettings, getServiceBySlug, getActiveServices } from '@/lib/db';
 import { buildWhatsappUrl } from '@/lib/utils';
+import { categoryMeta } from '@/lib/categories';
 
 const db = Astro.locals.runtime.env.DB;
 const slug = Astro.params.slug!;
@@ -18,12 +19,7 @@ if (!service) {
   Astro.response.status = 404;
 }
 
-const categoryMeta: Record<string, { label: string; icon: string }> = {
-  consultoria: { label: 'Asesoría B2B', icon: '🤝' },
-  curso: { label: 'Formación', icon: '🎓' },
-  bodega: { label: 'Logística', icon: '📦' },
-};
-
+const meta = service ? categoryMeta(service.category) : null;
 const whatsappUrl = service ? buildWhatsappUrl(settings.whatsapp_number, `${settings.whatsapp_message} (${service.title})`) : '';
 const others = service ? allServices.filter((s) => s.id !== service.id) : [];
 
@@ -32,7 +28,7 @@ const breadcrumbJsonLd = service && {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL('/', Astro.site).toString() },
-    { '@type': 'ListItem', position: 2, name: 'Servicios', item: new URL('/#servicios', Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: 'Servicios', item: new URL('/servicios', Astro.site).toString() },
     { '@type': 'ListItem', position: 3, name: service.title, item: new URL(`/servicios/${service.slug}`, Astro.site).toString() },
   ],
 };
@@ -52,85 +48,120 @@ const serviceJsonLd = service && {
   description={service ? service.description.slice(0, 160) : 'Este servicio ya no está disponible.'}
   image={service?.image_url ?? undefined}
   settings={settings}
+  darkTop
 >
-  {service ? (
+  {service && meta ? (
     <>
       <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} is:inline />
       <script type="application/ld+json" set:html={JSON.stringify(serviceJsonLd)} is:inline />
 
-      <section class="section-padding pt-32 md:pt-40">
+      <section class="scope-dark relative isolate overflow-hidden pt-32 pb-16 md:pt-40 md:pb-24">
+        <div class="hero-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+        <div class="aurora -z-10" style="width:36rem;height:36rem;top:-16rem;right:-10rem;background:#2c5282;" aria-hidden="true"></div>
+
         <div class="container">
-          <nav class="mb-8 text-sm text-[var(--color-text-muted)]" aria-label="Breadcrumb">
-            <a href="/" class="hover:text-[var(--color-teal)]">Inicio</a>
-            <span class="mx-2">/</span>
-            <a href="/#servicios" class="hover:text-[var(--color-teal)]">Servicios</a>
-            <span class="mx-2">/</span>
+          <nav class="mb-10 flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]" aria-label="Ruta de navegación">
+            <a href="/" class="transition-colors hover:text-[var(--color-accent-text)]">Inicio</a>
+            <span aria-hidden="true">/</span>
+            <a href="/servicios" class="transition-colors hover:text-[var(--color-accent-text)]">Servicios</a>
+            <span aria-hidden="true">/</span>
             <span class="text-[var(--color-text)]">{service.title}</span>
           </nav>
 
-          <div class="grid gap-12 md:grid-cols-[1.1fr_0.9fr] md:items-start">
+          <div class="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div data-reveal>
-              <span class="tag-pill mb-4 flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider">
-                <span aria-hidden="true">{categoryMeta[service.category]?.icon ?? '•'}</span> {categoryMeta[service.category]?.label ?? service.category}
+              <span class="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-white/5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--color-accent-text)]">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={meta.icon} />
+                {meta.label}
               </span>
               <h1 class="h1-display font-extrabold">{service.title}</h1>
-              <p class="mt-6 whitespace-pre-line text-lg text-[var(--color-text-muted)]">{service.description}</p>
+              <p class="mt-6 max-w-2xl whitespace-pre-line text-lg leading-relaxed text-[var(--color-text-muted)]">{service.description}</p>
 
-              <div class="mt-10 flex flex-wrap gap-4">
-                <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-gold">Consultar por WhatsApp</a>
+              <div class="mt-10 flex flex-wrap gap-3">
+                <a href={whatsappUrl} target="_blank" rel="noopener" class="btn-accent">
+                  Consultar por WhatsApp
+                  <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
                 {service.cta_url && (
                   <a href={service.cta_url} target="_blank" rel="noopener" class="btn-ghost">{service.cta_text}</a>
                 )}
               </div>
             </div>
 
-            <div class="flex flex-col gap-6" data-reveal>
+            <div class="relative">
+              <div class="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-[var(--color-accent)]/50 via-transparent to-[#2c5282]/70 opacity-70 blur-xl" aria-hidden="true"></div>
               {service.image_url ? (
                 <img
                   src={service.image_url}
                   alt={service.title}
                   width="640"
                   height="480"
-                  class="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_0_60px_-20px_rgba(230,57,70,0.3)]"
+                  fetchpriority="high"
+                  decoding="async"
+                  class="relative aspect-[4/3] w-full rounded-[1.6rem] border border-white/10 object-cover"
+                  transition:name={`servicio-${service.slug}`}
                 />
               ) : (
-                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" />
-              )}
-
-              {service.video_url && (
-                <video controls preload="none" poster={service.image_url ?? undefined} class="w-full rounded-2xl" style="aspect-ratio: 16/9;">
-                  <source src={service.video_url} />
-                </video>
+                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" class="relative" />
               )}
             </div>
           </div>
         </div>
       </section>
 
+      {service.video_url && (
+        <section class="section-padding !pb-0">
+          <div class="container max-w-4xl" data-reveal>
+            <p class="eyebrow">Video</p>
+            <video controls preload="none" poster={service.image_url ?? undefined} class="w-full rounded-3xl shadow-2xl" style="aspect-ratio: 16/9;">
+              <source src={service.video_url} />
+            </video>
+          </div>
+        </section>
+      )}
+
       {others.length > 0 && (
-        <section class="section-padding border-t border-[var(--color-border)]">
+        <section class="section-padding">
           <div class="container">
-            <h2 class="h2-display font-bold" data-reveal>Otros servicios</h2>
-            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {others.map((o) => (
-                <a href={`/servicios/${o.slug}`} class="card-soft p-6" data-reveal>
-                  <span class="tag-pill mb-2 flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider">
-                    <span aria-hidden="true">{categoryMeta[o.category]?.icon ?? '•'}</span> {categoryMeta[o.category]?.label ?? o.category}
-                  </span>
-                  <p class="font-bold">{o.title}</p>
-                </a>
-              ))}
+            <div class="flex items-end justify-between gap-6" data-reveal>
+              <div>
+                <p class="eyebrow">Sigue explorando</p>
+                <h2 class="h2-display font-extrabold">Otros servicios</h2>
+              </div>
+              <a href="/servicios" class="hidden items-center gap-2 text-sm font-bold text-[var(--color-brand)] sm:inline-flex group">
+                Ver todos
+                <svg class="btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+            </div>
+            <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {others.map((o, i) => {
+                const m = categoryMeta(o.category);
+                return (
+                  <a href={`/servicios/${o.slug}`} class="card-soft spotlight group flex items-center gap-4 p-4" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+                    <div class="img-zoom h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-[var(--color-bg-elevated)]">
+                      {o.image_url && (
+                        <img src={o.image_url} alt="" width="96" height="80" loading="lazy" decoding="async" class="h-full w-full object-cover" transition:name={`servicio-${o.slug}`} />
+                      )}
+                    </div>
+                    <div class="relative z-[2] min-w-0">
+                      <p class="text-[0.68rem] font-bold uppercase tracking-wider text-[var(--color-accent-text)]">{m.label}</p>
+                      <p class="mt-1 font-bold leading-snug">{o.title}</p>
+                    </div>
+                    <svg class="btn-arrow relative z-[2] ml-auto h-5 w-5 shrink-0 text-[var(--color-brand)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
     </>
   ) : (
-    <section class="section-padding pt-40 text-center">
+    <section class="scope-dark section-padding pt-40 text-center">
       <div class="container">
         <h1 class="h2-display font-bold">Servicio no encontrado</h1>
         <p class="mt-4 text-[var(--color-text-muted)]">Puede que este servicio ya no esté disponible.</p>
-        <a href="/#servicios" class="btn-gold mt-8 inline-flex">Ver servicios disponibles</a>
+        <a href="/servicios" class="btn-accent mt-8 inline-flex">Ver servicios disponibles</a>
       </div>
     </section>
   )}
