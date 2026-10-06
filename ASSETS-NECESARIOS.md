@@ -50,38 +50,38 @@ upper third + [bloque de estilo]
 ### 2. Servicio "Asesoría y Consultoría a Empresas"
 
 - **Dónde:** Panel → Servicios y cursos → editar el servicio → imagen.
-- **Formato:** horizontal 4:3, 1600 × 1200 px.
+- **Formato:** vertical 4:5, 1600 × 2000 px (como un retrato; el recorte cuida la parte de arriba).
 - **Contenido:** reunión de trabajo: manos sobre una mesa con documentos de importación, laptop con
   tablas, muestras de producto. Sin caras en primer plano.
 
 ```text
 Over-the-shoulder view of a business consultation at a wooden meeting table, hands pointing at printed
 shipping documents and a laptop showing spreadsheets, small product samples and a calculator on the table,
-bright modern office with large window, 4:3 horizontal + [bloque de estilo]
+bright modern office with large window, vertical 4:5 framing + [bloque de estilo]
 ```
 
 ### 3. Servicio "Cursos y Capacitaciones en Importaciones"
 
-- **Formato:** horizontal 4:3, 1600 × 1200 px.
+- **Formato:** vertical 4:5, 1600 × 2000 px (como un retrato; el recorte cuida la parte de arriba).
 - **Contenido:** taller práctico: personas de espalda o perfil tomando notas, pantalla con un mapa de
   rutas China–Colombia (sin texto legible).
 
 ```text
 Small hands-on business workshop in a modern training room, five adult students seen from behind and in
 profile taking notes, presenter's large screen showing an abstract world map with a curved route line
-from Asia to South America (no readable text), warm engaged atmosphere, 4:3 horizontal + [bloque de estilo]
+from Asia to South America (no readable text), warm engaged atmosphere, vertical 4:5 framing + [bloque de estilo]
 ```
 
 ### 4. Servicio "Gestión de Bodegas y Logística China–Cúcuta"
 
-- **Formato:** horizontal 4:3, 1600 × 1200 px.
+- **Formato:** vertical 4:5, 1600 × 2000 px (como un retrato; el recorte cuida la parte de arriba).
 - **Contenido:** bodega real: estibas, cajas apiladas y envueltas, montacargas, operario con chaleco de
   espaldas escaneando. Es la foto que más confianza da: idealmente reemplazarla pronto por la bodega real.
 
 ```text
 Clean organized warehouse interior in Colombia, tall metal racks with stacked cardboard boxes on wooden
 pallets, a worker in a navy safety vest seen from behind scanning a box with a handheld scanner, a forklift
-partially visible, shipping containers visible through an open loading dock door, 4:3 horizontal + [bloque de estilo]
+partially visible, shipping containers visible through an open loading dock door, vertical 4:5 framing + [bloque de estilo]
 ```
 
 ### 5. Modal promocional (cuando haya una promoción)

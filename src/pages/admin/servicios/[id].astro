@@ -59,7 +59,7 @@ if (Astro.request.method === 'POST') {
       <textarea id="description" name="description" rows="5" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-accent)]">{service.description}</textarea>
     </div>
 
-    <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="JPEG, PNG o WebP, máx 10 MB" currentValue={service.image_url} />
+    <FileUploader field="image_url" label="Foto" accept="image/*" folder="servicios" hint="Ideal vertical, como un retrato (4:5). Si sale una persona, el recorte cuida la parte de arriba (la cara). Se reduce sola al subirla." currentValue={service.image_url} />
     <FileUploader field="video_url" label="Video (opcional)" accept="video/*" folder="servicios-video" hint="MP4, máx 200 MB — se muestra en la página propia del servicio" isVideo={true} currentValue={service.video_url} />
 
     <div class="grid gap-4 sm:grid-cols-2">

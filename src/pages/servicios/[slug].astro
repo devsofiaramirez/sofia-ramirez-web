@@ -88,21 +88,21 @@ const serviceJsonLd = service && {
               </div>
             </div>
 
-            <div class="relative">
+            <div class="relative mx-auto w-full max-w-md lg:mr-0">
               <div class="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-[var(--color-accent)]/50 via-transparent to-[#2c5282]/70 opacity-70 blur-xl" aria-hidden="true"></div>
               {service.image_url ? (
                 <img
                   src={service.image_url}
                   alt={service.title}
                   width="640"
-                  height="480"
+                  height="800"
                   fetchpriority="high"
                   decoding="async"
-                  class="relative aspect-[4/3] w-full rounded-[1.6rem] border border-white/10 object-cover"
+                  class="relative aspect-[4/5] w-full rounded-[1.6rem] border border-white/10 object-cover object-[center_15%]"
                   transition:name={`servicio-${service.slug}`}
                 />
               ) : (
-                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/3" class="relative" />
+                <PlaceholderImage label={`Foto: ${service.title}`} aspect="4/5" class="relative" />
               )}
             </div>
           </div>
@@ -140,7 +140,7 @@ const serviceJsonLd = service && {
                   <a href={`/servicios/${o.slug}`} class="card-soft spotlight group flex items-center gap-4 p-4" data-reveal style={`--reveal-delay:${i * 90}ms`}>
                     <div class="img-zoom h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-[var(--color-bg-elevated)]">
                       {o.image_url && (
-                        <img src={o.image_url} alt="" width="96" height="80" loading="lazy" decoding="async" class="h-full w-full object-cover" transition:name={`servicio-${o.slug}`} />
+                        <img src={o.image_url} alt="" width="96" height="80" loading="lazy" decoding="async" class="h-full w-full object-cover object-[center_15%]" transition:name={`servicio-${o.slug}`} />
                       )}
                     </div>
                     <div class="relative z-[2] min-w-0">
