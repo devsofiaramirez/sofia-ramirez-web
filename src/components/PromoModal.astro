@@ -1,7 +1,7 @@
 ---
 // Modal publicitario configurable desde /admin/configuracion.
 // Ya no sale apenas se entra (tapaba la portada y Google lo tomaba como el contenido principal):
-// aparece según `trigger` —a los segundos del panel (mínimo 3), al bajar media página o al intentar
+// aparece según `trigger` —a los segundos del panel (0 = de inmediato), al bajar media página o al intentar
 // irse— una sola vez por visita. La imagen/video se descarga con la página para que abra de una.
 // Si hay video Y foto cargados, gana el video (es el formato más llamativo para una promo).
 interface Props {
@@ -156,7 +156,7 @@ const hasFooter = !!text || !!buttonUrl;
         timers.push(window.setTimeout(fire, 20000));
       }
     } else {
-      const segundos = Math.max(3, Number(backdrop.dataset.delay) || 3);
+      const segundos = Math.max(0, Number(backdrop.dataset.delay ?? 3));
       timers.push(window.setTimeout(fire, segundos * 1000));
     }
   });

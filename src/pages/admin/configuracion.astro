@@ -180,8 +180,8 @@ const inputClass = 'w-full rounded-lg border border-[var(--color-border)] bg-[va
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_delay_seg">Segundos antes de aparecer</label>
-          <input id="promo_modal_delay_seg" name="promo_modal_delay_seg" type="number" min="3" value={settings.promo_modal_delay_seg || '3'} class={inputClass} />
-          <p class="mt-1 text-xs text-[var(--color-text-muted)]">Mínimo 3. Solo aplica si arriba elegiste "A los segundos que indiques".</p>
+          <input id="promo_modal_delay_seg" name="promo_modal_delay_seg" type="number" min="0" value={settings.promo_modal_delay_seg || '3'} class={inputClass} />
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">0 = de inmediato. Solo aplica si arriba elegiste "A los segundos que indiques".</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_text">Texto de la oferta</label>
