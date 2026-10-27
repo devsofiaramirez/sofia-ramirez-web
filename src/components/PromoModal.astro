@@ -1,8 +1,8 @@
 ---
 // Modal publicitario configurable desde /admin/configuracion.
 // Ya no sale apenas se entra (tapaba la portada y Google lo tomaba como el contenido principal):
-// aparece según `trigger` —a los segundos, al bajar media página o al intentar irse— una sola vez
-// por visita. La imagen/video se descarga solo cuando va a mostrarse.
+// aparece según `trigger` —a los segundos del panel (mínimo 3), al bajar media página o al intentar
+// irse— una sola vez por visita. La imagen/video se descarga con la página para que abra de una.
 // Si hay video Y foto cargados, gana el video (es el formato más llamativo para una promo).
 interface Props {
   enabled: boolean;
@@ -12,8 +12,9 @@ interface Props {
   buttonText?: string;
   buttonUrl?: string;
   trigger?: string; // 'tiempo' (por defecto) | 'scroll' | 'salida'
+  delaySeg?: number;
 }
-const { enabled, image, videoUrl, text, buttonText, buttonUrl, trigger = 'tiempo' } = Astro.props;
+const { enabled, image, videoUrl, text, buttonText, buttonUrl, trigger = 'tiempo', delaySeg = 3 } = Astro.props;
 const hasVideo = !!videoUrl;
 const shouldRender = enabled && (hasVideo || !!image);
 const hasFooter = !!text || !!buttonUrl;
@@ -25,6 +26,7 @@ const hasFooter = !!text || !!buttonUrl;
     class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-[#0b1a30]/75 p-4 backdrop-blur-md"
     data-open="false"
     data-trigger={trigger || 'tiempo'}
+    data-delay={delaySeg}
     role="dialog"
     aria-modal="true"
     aria-label="Promoción"
@@ -95,29 +97,41 @@ const hasFooter = !!text || !!buttonUrl;
     if (seen()) return;
     let fired = false;
 
-    // Descarga el medio solo ahora, y muestra el modal cuando ya está listo (sin "saltos").
+    // El medio se empieza a descargar ya, con la página; así, al cumplirse el tiempo, abre de una.
+    let listo = false;
+    let pendiente = false;
+    const reveal = () => {
+      if (signal.aborted) return;
+      backdrop.dataset.open = 'true';
+      getLenis()?.stop();
+      closeBtn.focus({ preventScroll: true });
+      try {
+        sessionStorage.setItem(SEEN_KEY, '1');
+      } catch {}
+      if (media instanceof HTMLVideoElement) media.play().catch(() => {});
+    };
+    const alCargar = () => {
+      listo = true;
+      if (pendiente) reveal();
+    };
+    if (media instanceof HTMLVideoElement) {
+      media.addEventListener('loadeddata', alCargar, { once: true, signal });
+      media.preload = 'auto';
+      media.src = media.dataset.src!;
+      media.load();
+    } else {
+      media.addEventListener('load', alCargar, { once: true, signal });
+      media.src = media.dataset.src!;
+      if (media.complete) listo = true;
+    }
+
+    // Muestra el modal cuando el medio ya está listo (sin "saltos"); si aún no, en cuanto cargue.
     const fire = () => {
       if (fired || seen()) return;
       fired = true;
       ac.signal.aborted || cleanupTriggers();
-      const reveal = () => {
-        if (signal.aborted) return;
-        backdrop.dataset.open = 'true';
-        getLenis()?.stop();
-        closeBtn.focus({ preventScroll: true });
-        try {
-          sessionStorage.setItem(SEEN_KEY, '1');
-        } catch {}
-        if (media instanceof HTMLVideoElement) media.play().catch(() => {});
-      };
-      if (media instanceof HTMLVideoElement) {
-        media.addEventListener('loadeddata', reveal, { once: true, signal });
-        media.src = media.dataset.src!;
-        media.load();
-      } else {
-        media.addEventListener('load', reveal, { once: true, signal });
-        media.src = media.dataset.src!;
-      }
+      if (listo) reveal();
+      else pendiente = true;
     };
 
     const triggerAc = new AbortController();
@@ -142,7 +156,8 @@ const hasFooter = !!text || !!buttonUrl;
         timers.push(window.setTimeout(fire, 20000));
       }
     } else {
-      timers.push(window.setTimeout(fire, 8000));
+      const segundos = Math.max(3, Number(backdrop.dataset.delay) || 3);
+      timers.push(window.setTimeout(fire, segundos * 1000));
     }
   });
 </script>

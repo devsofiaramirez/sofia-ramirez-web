@@ -18,7 +18,7 @@ if (Astro.request.method === 'POST') {
     'social_instagram', 'social_facebook', 'social_tiktok', 'social_linkedin',
     'contact_email',
     'promo_modal_image', 'promo_modal_video_url', 'promo_modal_text', 'promo_modal_button_text', 'promo_modal_button_url',
-    'promo_modal_trigger',
+    'promo_modal_trigger', 'promo_modal_delay_seg',
     'share_image_url',
     'quote_title', 'quote_subtitle',
     'quote_q1_label', 'quote_q1_options', 'quote_q2_label', 'quote_q2_options', 'quote_q3_label', 'quote_q3_options',
@@ -172,11 +172,16 @@ const inputClass = 'w-full rounded-lg border border-[var(--color-border)] bg-[va
         <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_trigger">¿Cuándo aparece?</label>
           <select id="promo_modal_trigger" name="promo_modal_trigger" class={inputClass}>
-            <option value="tiempo" selected={promoTrigger === 'tiempo'}>A los 8 segundos de estar en la página (recomendado)</option>
+            <option value="tiempo" selected={promoTrigger === 'tiempo'}>A los segundos que indiques abajo (recomendado)</option>
             <option value="scroll" selected={promoTrigger === 'scroll'}>Cuando la persona baja hasta la mitad de la página</option>
             <option value="salida" selected={promoTrigger === 'salida'}>Cuando la persona va a salir (en celular: a los 20 segundos)</option>
           </select>
           <p class="mt-1 text-xs text-[var(--color-text-muted)]">No aparece apenas se entra: así primero ven tu portada y Google no castiga la página.</p>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-semibold" for="promo_modal_delay_seg">Segundos antes de aparecer</label>
+          <input id="promo_modal_delay_seg" name="promo_modal_delay_seg" type="number" min="3" value={settings.promo_modal_delay_seg || '3'} class={inputClass} />
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">Mínimo 3. Solo aplica si arriba elegiste "A los segundos que indiques".</p>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold" for="promo_modal_text">Texto de la oferta</label>
