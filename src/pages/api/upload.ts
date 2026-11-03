@@ -37,7 +37,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const key = `${folder}/${Date.now()}-${base}.${ext}`;
 
   const buffer = await file.arrayBuffer();
-  await MEDIA.put(key, buffer, { httpMetadata: { contentType: file.type } });
+  // Cada archivo tiene nombre único (fecha en el nombre) y nunca se reemplaza: el navegador lo puede guardar un año.
+  await MEDIA.put(key, buffer, { httpMetadata: { contentType: file.type, cacheControl: 'public, max-age=31536000, immutable' } });
 
   return Response.json({
     success: true,
